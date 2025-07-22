@@ -1,0 +1,507 @@
+    /* 基本スタイル */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5; /* 淡いグレー */
+      font-size: 16px;
+      color: #333;
+      box-sizing: border-box;
+    }
+
+    /* ヘッダーのスタイル */
+    header {
+      background-color: #4A90E2; /* 落ち着いたブルー系 */
+      color: #ffffff;
+      padding: 15px 20px;
+      text-align: center;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8em;
+      color: #ffffff;
+    }
+
+    /* フッターのスタイル */
+    footer {
+      background-color: #4A90E2; 
+      color: #ffffff; 
+      text-align: center;
+      padding: 10px 20px;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+      font-size: 0.9em;
+    }
+
+    /* コンテナ */
+    .container {
+      padding: 100px 20px 60px;
+      max-width: 1200px; 
+      margin: auto;
+      position: relative;
+    }
+
+    /* 見出し */
+    h1, h2 {
+      text-align: center;
+      color: #333;
+      margin: 20px 0;
+    }
+
+    /* ラベル */
+    label {
+      font-size: 16px;
+      color: #555;
+      display: block;
+      margin-top: 10px;
+    }
+
+    /* 入力フィールド */
+    input[type="text"], input[type="password"], textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    /* ボタン */
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      background-color: #d3d3d3;
+      cursor: not-allowed;
+    }
+
+    /* ボタンのカラー */
+    .submit {
+      background-color: #4A90E2;
+    }
+
+    .grading-button, .login-button, .bulk-grading, .export-excel, .grading-support-button {
+      background-color: #4A90E2;
+    }
+
+    .top-page-button.student {
+      background-color: #007bff;
+    }
+
+    .top-page-button.teacher {
+      background-color: #28a745;
+    }
+
+/* リセットボタン用 */
+.reset-all {
+  background-color: #dc3545;  /* 基本の背景色 */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* キャンセルボタン用 */
+.cancel-button {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ログアウトボタン用 */
+.logout {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.logout:hover {
+  background-color: #6c757d;
+}
+
+
+    .edit, .change-login-id-button, .change-password-button {
+      background-color: #5cb85c;
+    }
+
+    .delete {
+      background-color: #d9534f;
+    }
+
+    .result {
+      background-color: #5bc0de;
+      color: #fff;
+    }
+
+    /* トップページのボタン */
+    #top-page button {
+      margin: 10px 0;
+      width: 100%;
+      color: #fff;
+    }
+
+    /* テーブルスタイル */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      overflow-x: auto; 
+      display: block;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      word-wrap: break-word;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fefefe;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* メッセージスタイル */
+    #message, #studentLoginMessage, #teacherLoginMessage {
+      color: red;
+      text-align: center;
+    }
+
+    /* サーバからの結果メッセージ表示用 */
+    #studentMessage {
+      display: none; /* 初期は非表示 */
+    }
+
+    /* 結果メッセージ用のボックス */
+    .result-box {
+      background-color: #eef;
+      border: 1px solid #ccd;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 20px;
+      font-size: 1em;
+      color: #333;
+      word-wrap: break-word;
+    }
+
+    /* ダウンロードリンク */
+    .download-link {
+      color: #4A90E2;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* レスポンシブ対応 */
+    @media screen and (max-width: 768px) {
+      h1, h2 {
+        font-size: 1.2em;
+      }
+      input[type="text"], input[type="password"], textarea, select, button {
+        font-size: 14px;
+        padding: 10px;
+      }
+      table, th, td {
+        font-size: 12px;
+      }
+    }
+
+    /* 採点セクション */
+    #rating-section {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #e6f7ff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Submit Rating ボタンのスタイル */
+#submit-rating-button {
+  background-color: #4A90E2; /* 背景色 */
+  color: #ffffff; /* テキストカラー */
+  padding: 12px; /* パディング */
+  border: none; /* ボーダーを削除 */
+  border-radius: 4px; /* 角を丸く */
+  font-size: 16px; /* フォントサイズ */
+  cursor: pointer; /* マウスカーソルをポインタに */
+  width: 100%; /* 幅を100%に */
+  box-sizing: border-box; /* ボックスサイズを設定 */
+  transition: background-color 0.3s ease; /* 背景色の変化をスムーズに */
+}
+
+#submit-rating-button:hover {
+  background-color: #357ABD; /* ホバー時の背景色（少し濃いブルー） */
+}
+
+#submit-rating-button:disabled {
+  background-color: #d3d3d3; /* 無効時の背景色 */
+  cursor: not-allowed; /* 無効時のカーソル */
+}
+
+
+    /* 生徒用の注意書きスタイル（ボックスを無くして小さくイタリック体） */
+    .student-instructions {
+      color: #666;
+      font-size: 0.9em;
+      font-style: italic;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* 先生用ページなどで使用するノートクラス(元々のまま) */
+    .note {
+      color: #555;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      background-color: #fff;
+    }
+
+    /* ログアウトボタンのスタイル */
+    .logout-container {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      z-index: 1001;
+      display: none;
+    }
+
+    .logout-top {
+      background-color: #6c757d; 
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 14px;
+    }
+
+    .logout-top:hover {
+      background-color: #5a6268; 
+    }
+
+    /* ローディングオーバーレイ */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none; 
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .loader {
+      border: 8px solid #f3f3f3; 
+      border-top: 8px solid #4A90E2;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px; 
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-message {
+      color: #fff;
+      font-size: 1.2em;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+.announcement-box {
+  background-color: #fff;       /* 淡い背景に */
+  border-left: 5px solid #4A90E2;  /* 左線をヘッダーと同じ青色に */
+  padding: 10px;
+  margin: 10px;
+  font-size: 14px;
+  color: #333;
+  font-weight: normal; 
+}
+
+.announcement-box h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #333;                /* 見出しの文字色をダークグレー */
+  border-bottom: 2px solid #4A90E2; /* 下線を青色に */
+  padding-bottom: 5px;
+}
+
+#announcement-text {
+  white-space: pre-wrap;      /* 改行を反映 */
+  font-size: 14px;
+  color: #333;
+}
+
+/* ========= ここからモーダルのスタイル追加 ========== */
+    .modal-overlay {
+      display: none; /* 初期は非表示 */
+      position: fixed;
+      z-index: 3000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* 必要に応じてスクロール */
+      background-color: rgba(0,0,0,0.5); /* 黒半透明 */
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto; /* 画面中央寄せ用 */
+      padding: 20px;
+      border-radius: 5px;
+      max-width: 400px; /* モーダルの最大幅 */
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      /* スマホ対応のため 90% などにしてもよい */
+      width: 90%;
+    }
+
+    .modal-header {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .modal-close {
+      background-color: #6c757d;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      float: right;
+      margin-top: -5px;
+    }
+
+    .modal-close:hover {
+      opacity: 0.9;
+    }
+
+/*採点基準チェッカー*/
+.check {
+  background-color: #FF9900;
+  color: #000000;
+  text-shadow: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.check:hover,
+.check:focus {
+  opacity: 0.9;
+}
+
+/* エクセルエクスポートボタン */
+.excel-export-btn {
+  background: #2b6cb0;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity .3s;
+}
+.excel-export-btn:disabled { opacity: .4; cursor: default; }
+
+.excel-status {
+  margin-left: 12px;
+  font-size: 13px;
+  color: #555;
+}
+
+/* 解答ソースボタン */
+.src-btn {
+  margin-left: 4px;
+  padding: 4px 10px;
+  border: 1px solid #999;
+  background: #f0f0f0;   /* 薄いグレー */
+  color: #333;           /* ダークテキスト */
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.src-btn:hover {
+  background: #e0e0e0;
+}
+.src-btn.active {
+  background: #2b6cb0;
+  color: #fff;
+  border-color: #2b6cb0;
+}
+
+/* PDFコンテナ */
+.pdf-container-a4 {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 141.4%; /* A4の縦横比 (297 / 210 * 100) */
+  margin-bottom: 10px;
+  display: none; /* 初期状態は非表示 */
+}
+
+.pdf-container-a4 iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
