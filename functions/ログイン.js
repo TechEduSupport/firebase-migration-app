@@ -62,7 +62,7 @@ function checkTeacherLogin() {
       populatePromptTable([]); // 今は空のテーブルを表示
       document.getElementById('announcement-text').textContent = "現在お知らせはありません。";
       
-      // ▼▼▼ 問題のコードをコメントアウト（一時的に無効化） ▼▼▼
+      // ▼▼▼ 問題のコードをコメントアウト（一時的に無効化） ▼▼
       // updateUsageCount(user.email); 
 
     })
