@@ -23,30 +23,33 @@
       <button class="top-page-button teacher" onclick="showTeacherLogin()">先生用ページ</button>
     </div>
 
-    <!-- ▼ 生徒用ログインページ ▼ -->
-    <div id="student-login" style="display:none;">
-      <h2>生徒用ログインページ</h2>
-      <label for="studentLoginId">担当教員のID:</label>
+     <!-- ▼ 生徒用ページ ▼ -->
+    <div id="student-page" style="display:none;">
+       <label for="studentLoginId">担当教員のID:</label>
       <input type="text" id="studentLoginId" name="studentLoginId"
              onkeydown="if(event.key === 'Enter'){checkStudentLogin();}">
       <button class="login-button" onclick="checkStudentLogin()">ログイン</button>
       <p id="studentLoginMessage"></p>
     </div>
 
-    <!-- ▼ 先生用ログインページ ▼ -->
     <div id="teacher-login" style="display:none;">
       <h2>先生用ログインページ</h2>
-      <label for="teacherLoginId">ログインID:</label>
+
+      <button class="login-button google" onclick="signInWithGoogle()">
+        <img src="https://www.google.com/favicon.ico" alt="Google icon" style="vertical-align: middle; margin-right: 10px; height: 20px;">
+        Googleアカウントでログイン
+      </button>
+      <hr style="margin: 20px 0;">
+
+      <label for="teacherLoginId">ログインID（メールアドレス）:</label>
       <input type="text" id="teacherLoginId" name="teacherLoginId">
       <label for="teacherPassword">パスワード:</label>
       <input type="password" id="teacherPassword" name="teacherPassword"
              onkeydown="if(event.key === 'Enter'){checkTeacherLogin();}">
-      <button class="login-button" onclick="checkTeacherLogin()">ログイン</button>
+      <button class="login-button" onclick="checkTeacherLogin()">メールアドレスでログイン</button>
       <p id="teacherLoginMessage"></p>
     </div>
 
-    <!-- ▼ 生徒用ページ ▼ -->
-    <div id="student-page" style="display:none;">
       <h2>生徒用ページ</h2>
       <div id="student-page-content">
         <!-- ログアウトボタンを追加 -->
@@ -55,13 +58,13 @@
         </div>
 
         <label for="studentNumber">クラス/出席番号:</label>
-        <input type="text" id="studentNumber" name="studentNumber" placeholder="クラスや出席番号等を入力してください（入力方法は先生の指示に従ってください）">
+        <input type="text" id="studentNumber" name="studentNumber" placeholder="クラスや出席番号等を入力してください（入力方法は先生の指示に従ってください）" oninput="enableSubmitButton()">
 
-        <label for="studentName">氏名:</label>
-        <input type="text" id="studentName" name="studentName" placeholder="氏名を入力してください">
+        <label for="studentName">氏名:</label>
+        <input type="text" id="studentName" name="studentName" placeholder="氏名を入力してください" oninput="enableSubmitButton()">
 
-        <label for="promptId">問題ID:</label>
-        <select id="promptId" onchange="showProblemText()"></select>
+        <label for="promptId">問題ID:</label>
+        <select id="promptId" onchange="showProblemText()"></select>
 
 <!-- ▼ 問題文 ▼ -->
 <div id="problem-area" style="margin:12px 0; display:none;">
@@ -143,7 +146,6 @@
 
     <!-- ▼ 先生用ページ ▼ -->
     <div id="teacher-page" style="display:none;">
-      <!-- お知らせコンテナを先生用ページの中に移動 -->
       <div id="announcement" class="announcement-box">
         <h2>お知らせ</h2>
         <p id="announcement-text"></p>
@@ -155,19 +157,15 @@
       </p>
 
       <div id="teacher-page-content">
-        <!-- ログアウトボタンを追加 -->
         <div class="logout-container">
           <button class="logout-top" onclick="logout()">ログアウトしてトップ画面に戻る</button>
         </div>
 
         <h3 id="teacherName"></h3>
-        <!-- 一括採点モードへのボタン -->
         <button onclick="showBulkGradingPage()" class="bulk-grading">一括採点モードへ</button>
 
-        <!-- ログインID表示 -->
         <h3>ログインID: <span id="displayedLoginId"></span></h3>
 
-        <!-- パスワード表示 -->
         <h3>パスワード:
           <span id="displayedPassword"></span>
           <button class="change-password-button" onclick="openChangePasswordModal()">
@@ -175,34 +173,43 @@
           </button>
         </h3>
 
-<h3>プロンプトの編集</h3>
-<table id="promptTable"></table>
+        <h3>課題・採点基準の編集</h3>
+        <div class="table-container">
+          <table id="promptTable"></table>
+        </div>
 
-<h3>採点基準の追加</h3>
-<label for="newPromptNote">タイトル：</label>
-<textarea id="newPromptNote" style="height: 100px; width: 100%;"
-          placeholder="授業名や課題名などをここに入力してください"></textarea>
+        <div class="add-prompt-section">
+          <h3>新しい採点基準の作成</h3>
 
-<label for="newQuestion">問題文：</label>
-<textarea id="newQuestion" style="height: 200px; width: 100%;"
-          placeholder="生徒に表示する問題文をここに入力してください"></textarea>
+          <label for="newPromptNote">タイトル：</label>
+          <textarea id="newPromptNote" style="height: 100px; width: 100%;"
+            placeholder="授業名や課題名などをここに入力してください"></textarea>
 
-<label for="newFileForPrompt">画像またはPDFファイルを選択：</label>
-<input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
+          <label for="newQuestion">問題文：</label>
+          <textarea id="newQuestion" style="height: 200px; width: 100%;"
+            placeholder="生徒に表示する問題文をここに入力してください"></textarea>
 
-<label for="newPromptText">採点基準：</label>
-<textarea id="newPromptText" style="height: 300px; width: 100%;"
-          placeholder="採点基準のみここに入力してください"></textarea>
+          <label for="newFileForPrompt">問題の画像またはPDFファイル（任意）：</label>
+          <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
+
+          <label for="newPromptText">採点基準：</label>
+          <textarea id="newPromptText" style="height: 300px; width: 100%;"
+            placeholder="採点基準のみここに入力してください"></textarea>
+          
           <button onclick="checkPrompt()" class="check">採点基準の矛盾・曖昧さをチェック（推奨）</button>
-<div id="checkResultBox" style="display: none; position: relative; border: 1px solid #ccc; padding: 10px; margin-top: 10px;">
-  <div id="checkResultContent"></div>
-  </div>
-<label for="newPromptVisibility">生徒用ページでの表示：</label>
-<select id="newPromptVisibility">
-  <option value="表示" selected>表示</option>
-  <option value="非表示">非表示</option>
-</select>
-<button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
+
+          <div id="checkResultBox" style="display: none; position: relative; border: 1px solid #ccc; padding: 10px;">
+            <div id="checkResultContent"></div>
+          </div>
+
+          <label for="newPromptVisibility">生徒用ページでの表示：</label>
+          <select id="newPromptVisibility">
+            <option value="表示" selected>表示</option>
+            <option value="非表示">非表示</option>
+          </select>
+          
+          <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
+        </div>
       </div>
     </div>
 
@@ -286,6 +293,11 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="firebase-init.js"></script>
 <script src="script.js"></script>
+<script src="teacher-script.js"></script>
+<script src="student-script.js"></script> 
+<script src="js/ui.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/prompttable.js"></script>
 
 </body>
 </html>
