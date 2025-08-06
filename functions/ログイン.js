@@ -25,7 +25,7 @@ function checkStudentLogin(studentLoginId) {
 
 
 /**
- * 【Firebase版】先生用ログイン関数
+ * 【Firebase版】先生用ログイン関数（修正版）
  */
 function checkTeacherLogin() {
   const email = document.getElementById('teacherLoginId').value;
@@ -44,7 +44,7 @@ function checkTeacherLogin() {
       const user = userCredential.user;
       console.log('Firebaseログイン成功:', user.email);
 
-      globalTeacherId = user.email; // グローバル変数にはメールアドレスを保持
+      globalTeacherId = user.email;
 
       // 画面を先生用ページに切り替え
       document.getElementById('teacher-login').style.display = 'none';
@@ -61,7 +61,9 @@ function checkTeacherLogin() {
       // TODO: 次のステップで、Firestoreからプロンプトやお知らせを取得する処理を追加します
       populatePromptTable([]); // 今は空のテーブルを表示
       document.getElementById('announcement-text').textContent = "現在お知らせはありません。";
-      updateUsageCount(user.email); //これも後でFirestoreから取得するように変更
+      
+      // ▼▼▼ 問題のコードをコメントアウト（一時的に無効化） ▼▼▼
+      // updateUsageCount(user.email); 
 
     })
     .catch((error) => {
