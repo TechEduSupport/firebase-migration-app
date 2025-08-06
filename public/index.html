@@ -8,24 +8,20 @@
 
 </head>
 <body>
-  <!-- ヘッダー -->
   <header>
     <h1>手書き採点アシスタント</h1>
-    <!-- 利用回数表示エリア（ヘッダー直下に配置） -->
     <div id="usageCountDisplay" style="text-align: center; font-size: 16px; font-weight: bold;"></div>
   </header>
 
-  <!-- メインコンテナ（レイアウト用） -->
   <div class="container">
-    <!-- ▼ トップページ ▼ -->
     <div id="top-page">
       <button class="top-page-button student" onclick="showStudentLogin()">生徒用ページ</button>
       <button class="top-page-button teacher" onclick="showTeacherLogin()">先生用ページ</button>
     </div>
 
-     <!-- ▼ 生徒用ページ ▼ -->
-    <div id="student-page" style="display:none;">
-       <label for="studentLoginId">担当教員のID:</label>
+    <div id="student-login" style="display:none;">
+      <h2>生徒用ログインページ</h2>
+      <label for="studentLoginId">担当教員のID:</label>
       <input type="text" id="studentLoginId" name="studentLoginId"
              onkeydown="if(event.key === 'Enter'){checkStudentLogin();}">
       <button class="login-button" onclick="checkStudentLogin()">ログイン</button>
@@ -34,13 +30,11 @@
 
     <div id="teacher-login" style="display:none;">
       <h2>先生用ログインページ</h2>
-
       <button class="login-button google" onclick="signInWithGoogle()">
         <img src="https://www.google.com/favicon.ico" alt="Google icon" style="vertical-align: middle; margin-right: 10px; height: 20px;">
         Googleアカウントでログイン
       </button>
       <hr style="margin: 20px 0;">
-
       <label for="teacherLoginId">ログインID（メールアドレス）:</label>
       <input type="text" id="teacherLoginId" name="teacherLoginId">
       <label for="teacherPassword">パスワード:</label>
@@ -50,80 +44,53 @@
       <p id="teacherLoginMessage"></p>
     </div>
 
+    <div id="student-page" style="display:none;">
       <h2>生徒用ページ</h2>
       <div id="student-page-content">
-        <!-- ログアウトボタンを追加 -->
         <div class="logout-container">
           <button class="logout-top" onclick="logout()">ログアウトしてトップ画面に戻る</button>
         </div>
-
         <label for="studentNumber">クラス/出席番号:</label>
-        <input type="text" id="studentNumber" name="studentNumber" placeholder="クラスや出席番号等を入力してください（入力方法は先生の指示に従ってください）" oninput="enableSubmitButton()">
-
-        <label for="studentName">氏名:</label>
-        <input type="text" id="studentName" name="studentName" placeholder="氏名を入力してください" oninput="enableSubmitButton()">
-
-        <label for="promptId">問題ID:</label>
-        <select id="promptId" onchange="showProblemText()"></select>
-
-<!-- ▼ 問題文 ▼ -->
-<div id="problem-area" style="margin:12px 0; display:none;">
-  <h3 style="margin:4px 0;">問題</h3>
-  
-  <img id="problem-image" style="display:none; max-width:100%; height:auto; margin-bottom:10px;">
-  
-  <div class="pdf-container-a4" id="pdf-container">
-  <iframe id="problem-pdf" style="border: 1px solid #ccc;"></iframe>
-</div>
-
-  <div id="problem-text"
-       style="white-space:pre-wrap; border:1px solid #ccc; padding:8px; border-radius:6px; resize: vertical; overflow: auto; max-height: 60vh;">
-  </div>
-</div>
-
-<!-- ▼ 解答ソース切替ボタン ▼ -->
-<div id="answer-source-group" style="margin:12px 0;">
-  <span>解答ソースを選択:</span>
-  <button id="btn-image" class="src-btn active" onclick="selectAnswerMode('image')">画像</button>
-  <button id="btn-text"  class="src-btn"        onclick="selectAnswerMode('text')">テキスト</button>
-</div>
-
-<!-- ▼ 画像入力エリア ▼ -->
-<div id="image-input-area">
-  <label for="uploadImage">画像をアップロード:</label>
-  <input type="file" id="uploadImage" accept="image/jpeg, image/jpg, image/png"
-         capture="environment" onchange="handleImageUpload(event)">
-
-  <!-- 注意書き：画像モード時のみ表示 -->
-  <div id="image-instructions" class="student-instructions">
-    ※より正確な採点のため、以下の点に注意して撮影してください。<br>
-    ・カメラは正しい向きで撮影すること<br>
-    ・影の映り込みなどに注意し、文字が鮮明に映るようにすること<br>
-    ・答案用紙以外の物が映り込まないようにすること<br>
-    ・一文字ずつマス目で囲まれた文字や罫線（4線）上に書かれた文字は認識精度が大幅に低下します。利用はお控えください。
-  </div>
-</div>
-
-<!-- ▼ テキスト入力エリア ▼ -->
-<div id="text-input-area" style="display:none;">
-  <label for="textAnswer">解答を入力:</label>
-  <textarea id="textAnswer" rows="5" placeholder="ここに解答を入力"
-            oninput="enableSubmitButton()"></textarea>
-</div>
-
-
-        <!-- ローディングオーバーレイ -->
+        <input type="text" id="studentNumber" name="studentNumber" placeholder="クラスや出席番号等を入力してください（入力方法は先生の指示に従ってください）" oninput="enableSubmitButton()">
+        <label for="studentName">氏名:</label>
+        <input type="text" id="studentName" name="studentName" placeholder="氏名を入力してください" oninput="enableSubmitButton()">
+        <label for="promptId">問題ID:</label>
+        <select id="promptId" onchange="showProblemText()"></select>
+        <div id="problem-area" style="margin:12px 0; display:none;">
+          <h3 style="margin:4px 0;">問題</h3>
+          <img id="problem-image" style="display:none; max-width:100%; height:auto; margin-bottom:10px;">
+          <div class="pdf-container-a4" id="pdf-container">
+            <iframe id="problem-pdf" style="border: 1px solid #ccc;"></iframe>
+          </div>
+          <div id="problem-text" style="white-space:pre-wrap; border:1px solid #ccc; padding:8px; border-radius:6px; resize: vertical; overflow: auto; max-height: 60vh;"></div>
+        </div>
+        <div id="answer-source-group" style="margin:12px 0;">
+          <span>解答ソースを選択:</span>
+          <button id="btn-image" class="src-btn active" onclick="selectAnswerMode('image')">画像</button>
+          <button id="btn-text" class="src-btn" onclick="selectAnswerMode('text')">テキスト</button>
+        </div>
+        <div id="image-input-area">
+          <label for="uploadImage">画像をアップロード:</label>
+          <input type="file" id="uploadImage" accept="image/jpeg, image/jpg, image/png" capture="environment" onchange="handleImageUpload(event)">
+          <div id="image-instructions" class="student-instructions">
+            ※より正確な採点のため、以下の点に注意して撮影してください。<br>
+            ・カメラは正しい向きで撮影すること<br>
+            ・影の映り込みなどに注意し、文字が鮮明に映るようにすること<br>
+            ・答案用紙以外の物が映り込まないようにすること<br>
+            ・一文字ずつマス目で囲まれた文字や罫線（4線）上に書かれた文字は認識精度が大幅に低下します。利用はお控えください。
+          </div>
+        </div>
+        <div id="text-input-area" style="display:none;">
+          <label for="textAnswer">解答を入力:</label>
+          <textarea id="textAnswer" rows="5" placeholder="ここに解答を入力" oninput="enableSubmitButton()"></textarea>
+        </div>
         <div id="loading-overlay" class="overlay">
           <div>
             <div class="loader"></div>
             <div class="loading-message">ただいま採点中です。しばらくお待ちください</div>
           </div>
         </div>
-
-        <!-- サーバ返却結果を表示するボックス -->
         <div id="studentMessage" class="result-box"></div>
-
-        <!-- 採点の評価セクション -->
         <div id="rating-section" style="display: none;">
           <h3>採点の評価</h3>
           <label for="rating">この採点の精度を評価してください（1-5）:</label>
@@ -134,172 +101,121 @@
             <option value="2">2 - 低い</option>
             <option value="1">1 - 非常に低い</option>
           </select>
-          <button id="submit-rating-button" onclick="submitRating()" class="submit" disabled>
-            評価を送信
-          </button>
+          <button id="submit-rating-button" onclick="submitRating()" class="submit" disabled>評価を送信</button>
         </div>
-
         <button id="submit-button" onclick="submitReport()" class="submit" disabled>送信</button>
         <button onclick="resetForm()" class="reset-all">リセット</button>
       </div>
     </div>
 
-    <!-- ▼ 先生用ページ ▼ -->
     <div id="teacher-page" style="display:none;">
       <div id="announcement" class="announcement-box">
         <h2>お知らせ</h2>
         <p id="announcement-text"></p>
       </div>
-
       <h2>先生用ページ</h2>
-      <p style="color: red; font-size: 12px; text-align: center;">
-        注意！アップロードされた画像は3ヶ月で自動削除されます
-      </p>
-
+      <p style="color: red; font-size: 12px; text-align: center;">注意！アップロードされた画像は3ヶ月で自動削除されます</p>
       <div id="teacher-page-content">
         <div class="logout-container">
           <button class="logout-top" onclick="logout()">ログアウトしてトップ画面に戻る</button>
         </div>
-
         <h3 id="teacherName"></h3>
         <button onclick="showBulkGradingPage()" class="bulk-grading">一括採点モードへ</button>
-
         <h3>ログインID: <span id="displayedLoginId"></span></h3>
-
         <h3>パスワード:
           <span id="displayedPassword"></span>
-          <button class="change-password-button" onclick="openChangePasswordModal()">
-            パスワードを変更する
-          </button>
+          <button class="change-password-button" onclick="openChangePasswordModal()">パスワードを変更する</button>
         </h3>
-
         <h3>課題・採点基準の編集</h3>
         <div class="table-container">
           <table id="promptTable"></table>
         </div>
-
         <div class="add-prompt-section">
           <h3>新しい採点基準の作成</h3>
-
           <label for="newPromptNote">タイトル：</label>
-          <textarea id="newPromptNote" style="height: 100px; width: 100%;"
-            placeholder="授業名や課題名などをここに入力してください"></textarea>
-
+          <textarea id="newPromptNote" style="height: 100px; width: 100%;" placeholder="授業名や課題名などをここに入力してください"></textarea>
           <label for="newQuestion">問題文：</label>
-          <textarea id="newQuestion" style="height: 200px; width: 100%;"
-            placeholder="生徒に表示する問題文をここに入力してください"></textarea>
-
+          <textarea id="newQuestion" style="height: 200px; width: 100%;" placeholder="生徒に表示する問題文をここに入力してください"></textarea>
           <label for="newFileForPrompt">問題の画像またはPDFファイル（任意）：</label>
           <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
-
           <label for="newPromptText">採点基準：</label>
-          <textarea id="newPromptText" style="height: 300px; width: 100%;"
-            placeholder="採点基準のみここに入力してください"></textarea>
-          
+          <textarea id="newPromptText" style="height: 300px; width: 100%;" placeholder="採点基準のみここに入力してください"></textarea>
           <button onclick="checkPrompt()" class="check">採点基準の矛盾・曖昧さをチェック（推奨）</button>
-
           <div id="checkResultBox" style="display: none; position: relative; border: 1px solid #ccc; padding: 10px;">
             <div id="checkResultContent"></div>
           </div>
-
           <label for="newPromptVisibility">生徒用ページでの表示：</label>
           <select id="newPromptVisibility">
             <option value="表示" selected>表示</option>
             <option value="非表示">非表示</option>
           </select>
-          
           <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
         </div>
       </div>
     </div>
 
-<!-- ▼ 一括採点ページ ▼ -->
-<div id="bulk-grading-page" style="display:none;">
-  <h2>一括採点モード</h2>
-  <div>
-    <label for="promptSelect">採点基準プロンプトを選択:</label>
-    <select id="promptSelect"></select>
-    
-    <!-- ▼ 一エクセルエクスポートボタン ▼ -->
-    <div id="excel-export-area" style="margin-top: 16px;">
-  <button id="exportExcelButton" class="excel-export-btn">
-    Excel ファイルをエクスポート
-  </button>
-  <span id="excelStatus" class="excel-status"></span>
-</div>
+    <div id="bulk-grading-page" style="display:none;">
+      <h2>一括採点モード</h2>
+      <div>
+        <label for="promptSelect">採点基準プロンプトを選択:</label>
+        <select id="promptSelect"></select>
+        <div id="excel-export-area" style="margin-top: 16px;">
+          <button id="exportExcelButton" class="excel-export-btn">Excel ファイルをエクスポート</button>
+          <span id="excelStatus" class="excel-status"></span>
+        </div>
+        <label for="emailAddress" style="margin-left: 20px;">採点結果ダウンロードリンクの送信先メールアドレス:</label>
+        <input type="email" id="emailAddress" placeholder="例：taro.yamada@example-school.ed.jp" style="width: 250px; height: 30px; padding: 5px;">
+        <br><br>
+        <label for="uploadImages">画像をアップロード:</label>
+        <input type="file" id="uploadImages" accept="image/*" multiple onchange="checkFileCount()">
+        <p style="font-size: 12px; color: #555; margin-top: 5px;">
+          一度にアップロードできるファイルは最大30個です。<br>
+          採点完了後に、上記のメールアドレス宛にダウンロード用のリンクをお送りします。
+        </p>
+        <button id="gradingButton" class="grading-button" onclick="startBulkGrading()">採点とZIP化の開始</button>
+        <button class="reset-all" onclick="resetBulkGrading()">リセット</button>
+        <div id="progress"></div>
+        <div id="results"></div>
+        <button class="logout" onclick="backToTeacherPage()">戻る</button>
+      </div>
+    </div>
 
-    <!-- ▼ 追加：送信先メールアドレス入力欄 ▼ -->
-    <label for="emailAddress" style="margin-left: 20px;">採点結果ダウンロードリンクの送信先メールアドレス:</label>
-    <input type="email" id="emailAddress" placeholder="例：taro.yamada@example-school.ed.jp" style="width: 250px; height: 30px; padding: 5px;">
-    <br><br>
-    <label for="uploadImages">画像をアップロード:</label>
-    <input type="file" id="uploadImages" accept="image/*" multiple onchange="checkFileCount()">
-    <p style="font-size: 12px; color: #555; margin-top: 5px;">
-      一度にアップロードできるファイルは最大30個です。<br>
-      採点完了後に、上記のメールアドレス宛にダウンロード用のリンクをお送りします。
-    </p>
-
-    <button id="gradingButton" class="grading-button" onclick="startBulkGrading()">
-      採点とZIP化の開始
-    </button>
-    <button class="reset-all" onclick="resetBulkGrading()">リセット</button>
-    <div id="progress"></div>
-    <div id="results"></div>
-    <button class="logout" onclick="backToTeacherPage()">戻る</button>
-  </div>
-</div>
-
-    <!-- 必要に応じてキャンバス -->
     <canvas id="canvas" style="display:none;"></canvas>
     <canvas id="gradingSupportCanvas" style="display:none;"></canvas>
 
-
-  <!-- ▼ パスワード変更用モーダル ▼ -->
-  <div id="changePasswordModal" class="modal-overlay" style="display:none;">
-    <div class="modal-content">
-      <div class="modal-header">パスワード変更</div>
-      <label for="newPassword">新パスワード</label>
-      <input type="password" id="newPassword" placeholder="半角英数字を組み合わせた8文字以上">
-
-      <label for="confirmPassword">新パスワード(確認)</label>
-      <input type="password" id="confirmPassword" placeholder="もう一度入力">
-
-      <button class="change-password-button" onclick="submitNewPassword()">OK</button>
-      <button class="cancel-button" onclick="closeChangePasswordModal()">キャンセル</button>
+    <div id="changePasswordModal" class="modal-overlay" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header">パスワード変更</div>
+        <label for="newPassword">新パスワード</label>
+        <input type="password" id="newPassword" placeholder="半角英数字を組み合わせた8文字以上">
+        <label for="confirmPassword">新パスワード(確認)</label>
+        <input type="password" id="confirmPassword" placeholder="もう一度入力">
+        <button class="change-password-button" onclick="submitNewPassword()">OK</button>
+        <button class="cancel-button" onclick="closeChangePasswordModal()">キャンセル</button>
+      </div>
     </div>
-  </div>
-  <!-- ▲ モーダルここまで ▲ -->
-
-    </div><!-- /.container -->
-    
-  <!-- フッター -->
-  <footer>
+    </div><footer>
     &copy; 2024 EduSupport. All rights reserved.
   </footer>
 
-<!-- Marked.js を読み込み -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    window.addEventListener('load', function() {
+      if (window.marked) { console.log("marked.js is loaded:"); } 
+      else { console.error("marked.js failed to load."); }
+    });
+  </script>
 
-<script>
-  window.addEventListener('load', function() {
-    // Marked.jsの読み込みが完了してから処理を実行する
-    if (window.marked) {
-      console.log("marked.js is loaded:", marked.version);
-    } else {
-      console.error("marked.js failed to load.");
-    }
-  });
-</script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="firebase-init.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="firebase-init.js"></script>
-<script src="script.js"></script>
-<script src="teacher-script.js"></script>
-<script src="student-script.js"></script> 
-<script src="js/ui.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/prompttable.js"></script>
+  <script src="script.js"></script>
+  <script src="teacher-script.js"></script>
+  <script src="student-script.js"></script> 
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/prompttable.js"></script>
 
 </body>
 </html>
