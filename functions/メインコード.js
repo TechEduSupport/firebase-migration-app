@@ -1,23 +1,3 @@
-// 定数の定義
-const SPREADSHEET_ID = '1r04TYOf0_Xoa4GNETKI_eY4dpIqkSUZd7p0jC3L6T0k'; // ログイン情報、プロンプト、GPTモデルなど
-const RESULT_SPREADSHEET_ID = '16qCeyLBEj0XDGXpAbhIQhkm3jkTnp82Mh3DMaYn8vZM'; // processTestImages の結果を書き込む
-const folderId = '1jz9aDtViGHFiO7FpzgGy8kHo5YsIJTPV'; // 画像を保存するフォルダID
-const LOGIN_SHEET_NAME = 'ログイン情報';
-const PROMPT_SHEET_NAME = 'プロンプト';
-const RESULT_SHEET_NAME = '結果';
-const URL_SHEET_NAME = '最新URL';
-const GPT_MODEL_SHEET_NAME = 'GPTモデル';
-const GPT_MODEL_CELL = 'B2';
-const GPT_MODEL_CELL_FOR_GRADING = 'B3'; // 一括採点用モデル
-const GPT_MODEL_CELL_FOR_EXTRACT_SCORE = 'B4'
-const URL_CELL = 'A2';
-const PARENT_FOLDER_ID = '1-BFapd0OnmG9RlO9xYZ_5Otb_N6RYGJ8'; // 一括採点の親フォルダID
-const TEMPLATE_DOC_ID = '1jAHWaTcj3fwcaX_QD0T2lzIPZScm4E5qpL1-ERnQV_U'; // テンプレートのドキュメントID
-const PDF_PARENT_FOLDER_ID = '1Ql1CpQzpGRLA40K21SjYXdxE4Ts_Oak9'; // PDFを格納する親フォルダID
-const FOLDER_ID = '1M5-tqvVQT3mQccbr3gnePCxuGzO273KV';  // 採点基準サポートファイル保存先のGoogle DriveフォルダID
-const Export_Reault_Folder_For_Bulk = '1YsUfFpvBVQyoqqLTYxZucZLbuTf2vGS6'; // 一括採点エクスポート先フォルダ
-const folderIdforPicandPdf = '1Yfx-Cxg0upmEQwin7rHQC-VnHehfs1k8'; // 問題の画像やPDFを格納するフォルダ
-
 // doGet 関数
 function doGet(e) {
   const currentUrl = ScriptApp.getService().getUrl();
