@@ -62,3 +62,44 @@ function submitNewPassword() {
     })
     .changePassword(loginId, newPassword);
 }
+
+/**
+ * 【Firebase版】ログインした先生の課題（プロンプト）をFirestoreから取得する関数
+ * @param {string} teacherUid - ログインした先生のUID
+ */
+async function fetchTeacherPrompts(teacherUid) {
+  try {
+    console.log(`Firestoreから先生 (UID: ${teacherUid}) の課題を取得します...`);
+    
+    // 1. promptsコレクションに対して、teacherIdが一致するものを問い合わせる
+    const querySnapshot = await db.collection('prompts')
+                                  .where('teacherId', '==', teacherUid)
+                                  .orderBy('createdAt', 'desc') // 新しい順に並べる
+                                  .get();
+
+    // 2. 取得したドキュメントを、prompttable.jsが理解できる形式に変換
+    const prompts = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      prompts.push({
+        id: doc.id,         // ドキュメントID
+        note: data.title,       // Firestoreの'title'を'note'としてマッピング
+        visibility: data.isVisible ? '表示' : '非表示', // booleanを文字列に変換
+        question: data.question,
+        text: data.subject,     // Firestoreの'subject'を'text'（採点基準）としてマッピング
+        // imageFileId: data.questionImageUrl // 必要であれば追加
+      });
+    });
+
+    console.log(`${prompts.length}件の課題が見つかりました。`, prompts);
+
+    // 3. 既存のテーブル描画関数を呼び出す！
+    populatePromptTable(prompts);
+
+  } catch (error) {
+    console.error("課題の取得中にエラーが発生しました:", error);
+    alert("課題一覧の読み込みに失敗しました。");
+    // エラーが発生した場合も、空のテーブルを表示
+    populatePromptTable([]);
+  }
+}

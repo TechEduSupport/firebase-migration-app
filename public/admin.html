@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理者ダッシュボード - 手書き採点アシスタント</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+  <header>
+    <h1>管理者ダッシュボード</h1>
+  </header>
+
+  <div class="container">
+
+    <div class="admin-card">
+      <h2><span class="emoji-icon">🏫</span> 学校管理</h2>
+      <p class="card-description">学校の基本情報を登録・編集します。</p>
+      <label for="schoolName">学校名:</label>
+      <input type="text" id="schoolName" placeholder="〇〇市立△△中学校">
+      <button class="submit">学校情報を保存</button>
+    </div>
+
+    <div class="admin-card">
+      <h2><span class="emoji-icon">📚</span> 新規クラス作成</h2>
+      <p class="card-description">新しいクラスを作成し、担当教師を割り当てます。</p>
+      <label for="className">クラス名:</label>
+      <input type="text" id="className" placeholder="3年A組">
+      <label for="classYear">年度:</label>
+      <input type="number" id="classYear" placeholder="2025">
+      <label for="classTeachers">担当教師:</label>
+      <textarea id="classTeachers" placeholder="（将来的に教師の検索機能を追加）" rows="3"></textarea>
+      <button class="submit">クラスを作成</button>
+    </div>
+
+    <div class="admin-card">
+      <h2><span class="emoji-icon">👥</span> ユーザー一括登録</h2>
+      <p class="card-description">CSVファイルをアップロードして、教師と生徒のアカウントを一括で作成します。</p>
+      
+      <div id="csvUploadArea">
+        <p>ここにCSVファイルをドラッグ＆ドロップ</p>
+        <p>または</p>
+        <input type="file" id="csvFile" accept=".csv" hidden>
+        <button id="csvSelectBtn">ファイルを選択</button>
+      </div>
+
+      <div id="uploadStatus">
+        </div>
+      
+      <button id="csvUploadBtn" class="submit" disabled>アップロードして登録を開始</button>
+    </div>
+
+  </div>
+
+  <footer>
+    &copy; 2024 EduSupport. All rights reserved.
+  </footer>
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  
+  <script src="firebase-init.js"></script> 
+  <script src="js/admin-script.js"></script>
+  
+  </body>
+</html>

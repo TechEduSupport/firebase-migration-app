@@ -1,0 +1,13 @@
+// firestore.rules
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // このルールは開発用です。
+    // 本番環境にデプロイする前に、必ず適切なルールに書き換えてください。
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

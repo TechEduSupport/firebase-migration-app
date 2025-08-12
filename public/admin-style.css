@@ -1,0 +1,103 @@
+/* admin-style.css */
+
+/* 管理カードの基本スタイル */
+.admin-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  margin-bottom: 30px;
+  transition: all 0.3s ease-in-out;
+}
+
+.admin-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.admin-card h2 {
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 10px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #4A90E2; /* 既存のテーマカラー */
+  font-size: 1.4em;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.emoji-icon {
+  font-size: 1.5em;
+  margin-right: 12px;
+}
+
+.card-description {
+  font-size: 0.95em;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* CSVアップロードエリアのスタイル */
+#csvUploadArea {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  margin-top: 20px;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* ドラッグオーバー時のスタイル */
+#csvUploadArea.dragover {
+  background-color: #eef;
+  border-color: #4A90E2;
+}
+
+#csvUploadArea p {
+  margin: 10px 0;
+  color: #555;
+}
+
+/* ファイル選択ボタンのスタイル */
+#csvSelectBtn {
+  background-color: #fff;
+  color: #4A90E2;
+  border: 1px solid #4A90E2;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+#csvSelectBtn:hover {
+  background-color: #f0f8ff;
+}
+
+/* アップロードボタンのスタイル */
+#csvUploadBtn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.2em;
+}
+
+/* 処理結果の表示エリア */
+#uploadStatus p {
+  padding: 12px;
+  border-radius: 4px;
+  margin-top: 15px;
+}
+
+.status-success {
+  background-color: #e6ffed;
+  border-left: 5px solid #4CAF50;
+  color: #2e7d32;
+}
+
+.status-error {
+  background-color: #ffebee;
+  border-left: 5px solid #d9534f;
+  color: #c62828;
+}

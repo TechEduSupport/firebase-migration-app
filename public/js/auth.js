@@ -104,7 +104,7 @@ function signInWithGoogle() {
       document.getElementById('displayedPassword').innerText = '（Googleログイン）';
       document.querySelector('#teacher-page .logout-container').style.display = 'block';
 
-      populatePromptTable([]);
+      fetchTeacherPrompts(user.uid);　 // Firestoreから先生の課題を取得
       document.getElementById('announcement-text').textContent = "現在お知らせはありません。";
     })
     .catch((error) => {
