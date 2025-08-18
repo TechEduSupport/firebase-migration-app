@@ -109,41 +109,68 @@
     </div>
 
     <div id="teacher-page" style="display:none;">
-      <div id="announcement" class="announcement-box">
-        <h2>お知らせ</h2>
-        <p id="announcement-text"></p>
-      </div>
-      <h2>先生用ページ</h2>
-      <p style="color: red; font-size: 12px; text-align: center;">注意！アップロードされた画像は3ヶ月で自動削除されます</p>
       <div id="teacher-page-content">
         <div class="logout-container">
-          <button class="logout-top" onclick="logout()">ログアウトしてトップ画面に戻る</button>
-        </div>
-      </div>
+  <button class="logout-top" onclick="logout()">ログアウトしてトップ画面に戻る</button>
+</div>
+
+<h3 id="teacherName"></h3>
+<button onclick="showBulkGradingPage()" class="bulk-grading">一括採点モードへ</button>
+<h3>ログインID: <span id="displayedLoginId"></span></h3>
+<h3>パスワード:
+  <span id="displayedPassword"></span>
+  <button class="change-password-button" onclick="openChangePasswordModal()">パスワードを変更する</button>
+</h3>
+
+<h3>課題・採点基準の編集</h3>
+<div class="table-container">
+  <table id="promptTable"></table>
+</div>
+
+<div class="add-prompt-section">
+  <h3>新しい採点基準の作成</h3>
+  <label for="newPromptNote">タイトル：</label>
+  <textarea id="newPromptNote" style="height: 100px; width: 100%;"></textarea>
+  <label for="newQuestion">問題文：</label>
+  <textarea id="newQuestion" style="height: 200px; width: 100%;"></textarea>
+  <label for="newFileForPrompt">問題の画像またはPDFファイル（任意）：</label>
+  <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
+  <label for="newPromptText">採点基準：</label>
+  <textarea id="newPromptText" style="height: 300px; width: 100%;"></textarea>
+  
+  <label for="newPromptVisibility">生徒用ページでの表示：</label>
+  <select id="newPromptVisibility">
+    <option value="表示" selected>表示</option>
+    <option value="非表示">非表示</option>
+  </select>
+  <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
+</div>
+      </div> 
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script>
-    window.addEventListener('load', function() {
-      if (window.marked) { console.log("marked.js is loaded:"); }
-      else { console.error("marked.js failed to load."); }
-    });
-  </script>
+ </div> <footer>
+      &copy; 2024 EduSupport. All rights reserved.
+    </footer>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-  <script src="firebase-init.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      window.addEventListener('load', function() {
+        if (window.marked) { console.log("marked.js is loaded:"); } 
+        else { console.error("marked.js failed to load."); }
+      });
+    </script>
 
-  <!-- アプリケーションスクリプト -->
-  <script src="js/ui.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/teacher.js"></script>
-  <script src="js/student.js"></script>
-  <script src="js/prompttable.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="firebase-init.js"></script>
 
-</body>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/teacher.js"></script>
+    <script src="js/student.js"></script>
+    <script src="js/prompttable.js"></script>
+    
+  </body>
 </html>

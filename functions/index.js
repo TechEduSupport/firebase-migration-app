@@ -5,6 +5,7 @@ const admin = require("firebase-admin");
 const csv = require("csv-parser");
 const logger = require("firebase-functions/logger");
 const { Readable } = require("stream");
+const { FieldValue } = require("firebase-admin/firestore"); // FieldValueを直接インポート
 
 admin.initializeApp();
 
@@ -99,7 +100,7 @@ async function processUserCreation(userData) {
         name,
         role,
         schoolId,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+         createdAt: FieldValue.serverTimestamp(), // admin.firestore. を削除
       });
 
     logger.info(`[成功] ユーザー「${name}」を作成しました。`);
