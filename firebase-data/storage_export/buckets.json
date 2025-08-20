@@ -2,6 +2,9 @@
   "buckets": [
     {
       "id": "tsa-0503.firebasestorage.app"
+    },
+    {
+      "id": "tsa-0503.appspot.com"
     }
   ]
 }

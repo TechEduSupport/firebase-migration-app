@@ -88,6 +88,7 @@ async function fetchTeacherPrompts(teacherUid) {
         visibility: data.isVisible ? '表示' : '非表示',
         question: data.question,
         text: data.subject,
+        questionImageUrl: data.questionImageUrl || '', // ★ この行を追加
       });
     });
 

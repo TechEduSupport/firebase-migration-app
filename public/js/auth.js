@@ -5,10 +5,11 @@
 let globalTeacherId = null;
 
 // ------------------------------
-// 生徒用ログイン処理（匿名認証）
+// 生徒用ログイン処理（メール/パスワード認証に変更）
 // ------------------------------
 function checkStudentLogin() {
-  const teacherLoginId = document.getElementById('studentLoginId').value.trim();
+  const email = document.getElementById('studentLoginId').value;
+  const password = document.getElementById('studentPassword').value;
   const loginButton = document.querySelector('#student-login .login-button');
   const messageElement = document.getElementById('studentLoginMessage');
 
@@ -16,44 +17,44 @@ function checkStudentLogin() {
   loginButton.innerText = 'ログイン中...';
   loginButton.disabled = true;
 
-  // 生徒は匿名認証でサインイン
   auth
-    .signInAnonymously()
-    .then(async () => {
-      // usersコレクションから担当教員を検索
-      const snapshot = await db
-        .collection('users')
-        .where('email', '==', teacherLoginId)
-        .where('role', '==', 'teacher')
-        .limit(1)
-        .get();
+    .signInWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      console.log('生徒としてFirebaseログイン成功:', user.email);
 
-      if (snapshot.empty) {
-        throw new Error('該当する教師が見つかりません。');
-      }
-
-      // 先生のUIDを保持
-      globalTeacherId = snapshot.docs[0].id;
+      // ログインした生徒のUIDをグローバル変数に保持
+      globalStudentId = user.uid; // ※後でstudent.jsで使う
 
       // 画面遷移
       document.getElementById('student-login').style.display = 'none';
       document.getElementById('student-page').style.display = 'block';
       document.querySelector('#student-page .logout-container').style.display = 'block';
 
-      // 教師IDを使って課題一覧を読み込む
-      loadPromptIds(globalTeacherId);
+      // 生徒の名前などをページに表示（任意）
+      document.getElementById('studentName').value = user.displayName || '';
+
+
+      // 生徒のクラス情報を基に課題一覧を読み込む
+      loadPromptsForStudent(user.uid);
     })
     .catch((error) => {
       console.error('生徒ログインエラー:', error);
-      messageElement.innerText = 'ログインに失敗しました。担当教員のIDを確認してください。';
-      auth.signOut();
+      if (
+        error.code === 'auth/user-not-found' ||
+        error.code === 'auth/wrong-password' ||
+        error.code === 'auth/invalid-credential'
+      ) {
+        messageElement.innerText = 'メールアドレスまたはパスワードが間違っています。';
+      } else {
+        messageElement.innerText = 'ログインに失敗しました。';
+      }
     })
     .finally(() => {
       loginButton.innerText = 'ログイン';
       loginButton.disabled = false;
     });
 }
-
 // ------------------------------
 // 先生用メール/パスワード認証
 // ------------------------------
@@ -191,4 +192,118 @@ function logout() {
       console.error('ログアウトエラー:', error);
       alert('ログアウト中にエラーが発生しました。');
     });
+}
+
+// ------------------------------
+// 運営管理者用のログイン処理
+// ------------------------------
+function checkSuperAdminLogin() {
+    const email = document.getElementById('superadminLoginId').value;
+    const password = document.getElementById('superadminPassword').value;
+    const loginButton = document.querySelector('#superadmin-login .login-button');
+    const messageElement = document.getElementById('superadminLoginMessage');
+
+    messageElement.innerText = '';
+    loginButton.disabled = true;
+    loginButton.innerText = 'ログイン中...';
+
+    auth.signInWithEmailAndPassword(email, password)
+        .then(async (userCredential) => {
+            const user = userCredential.user;
+
+            // Firestoreからユーザーのロール（役割）情報を取得
+            const userDoc = await db.collection('users').doc(user.uid).get();
+
+            // ▼▼▼ ここからデバッグ用のログを追加 ▼▼▼
+            if (userDoc.exists) {
+                console.log('Firestoreから取得したユーザー情報:', userDoc.data());
+                console.log('取得したロール:', `'${userDoc.data().role}'`); // シングルクォートで囲んで表示
+            } else {
+                console.log('Firestoreに該当するユーザーのドキュメントが見つかりませんでした。UID:', user.uid);
+            }
+            // ▲▲▲ ここまで ▲▲▲
+
+            if (!userDoc.exists || userDoc.data().role !== 'superadmin') {
+                throw new Error('auth/unauthorized-access');
+            }
+
+            console.log('運営管理者としてログイン成功:', user.email);
+
+            // ログインフォームを非表示にし、ダッシュボードを表示
+            document.getElementById('superadmin-login').style.display = 'none';
+            document.getElementById('superadmin-dashboard').style.display = 'block';
+            document.querySelector('#superadmin-dashboard .logout-container').style.display = 'block';
+
+            // 登録済みの学校一覧を読み込む
+            loadSchools();
+
+        })
+        .catch(error => {
+            console.error('運営管理者ログインエラー:', error);
+            if (error.message === 'auth/unauthorized-access') {
+                messageElement.innerText = 'このアカウントに運営管理者権限がありません。';
+            } else {
+                messageElement.innerText = 'ログインIDまたはパスワードが間違っています。';
+            }
+            auth.signOut();
+        })
+        .finally(() => {
+            loginButton.disabled = false;
+            loginButton.innerText = 'ログイン';
+        });
+}
+
+// ------------------------------
+// 学校管理者用のログイン処理
+// ------------------------------
+function checkSchoolAdminLogin() {
+    const email = document.getElementById('schoolAdminLoginId').value;
+    const password = document.getElementById('schoolAdminPassword').value;
+    const loginButton = document.querySelector('#schooladmin-login .login-button');
+    const messageElement = document.getElementById('schoolAdminLoginMessage');
+
+    messageElement.innerText = '';
+    loginButton.disabled = true;
+    loginButton.innerText = 'ログイン中...';
+
+    auth.signInWithEmailAndPassword(email, password)
+        .then(async (userCredential) => {
+            const user = userCredential.user;
+            const userDoc = await db.collection('users').doc(user.uid).get();
+
+            if (!userDoc.exists || userDoc.data().role !== 'schooladmin') {
+                throw new Error('auth/unauthorized-access');
+            }
+
+            console.log('学校管理者としてログイン成功:', user.email);
+            
+            const schoolId = userDoc.data().schoolId;
+            if (!schoolId) {
+                throw new Error('auth/no-school-assigned');
+            }
+
+            // ログインフォームを非表示にし、ダッシュボードを表示
+            document.getElementById('schooladmin-login').style.display = 'none';
+            document.getElementById('schooladmin-dashboard').style.display = 'block';
+            document.querySelector('#schooladmin-dashboard .logout-container').style.display = 'block';
+
+            // admin-script.jsのログイン成功後処理を呼び出す
+            onSchoolAdminLoginSuccess(schoolId);
+
+        })
+        .catch(error => {
+            console.error('学校管理者ログインエラー:', error);
+            if (error.message === 'auth/unauthorized-access') {
+                messageElement.innerText = 'このアカウントに学校管理者権限がありません。';
+            } else if (error.message === 'auth/no-school-assigned') {
+                messageElement.innerText = 'この管理者アカウントは、どの学校にも紐付けられていません。';
+            } else {
+                messageElement.innerText = 'ログインIDまたはパスワードが間違っています。';
+            }
+            auth.signOut();
+        })
+        .finally(() => {
+            loginButton.disabled = false;
+            loginButton.innerText = 'ログイン';
+        });
 }

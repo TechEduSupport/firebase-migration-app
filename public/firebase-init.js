@@ -33,4 +33,5 @@ if (window.location.hostname === "127.0.0.1" || window.location.hostname === "lo
   if (storage.useEmulator) {
     storage.useEmulator("127.0.0.1", 9199);
   }
+  firebase.functions().useEmulator("127.0.0.1", 5001);
 }

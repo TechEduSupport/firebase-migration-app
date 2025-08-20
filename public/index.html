@@ -20,13 +20,15 @@
     </div>
 
     <div id="student-login" style="display:none;">
-      <h2>生徒用ログインページ</h2>
-      <label for="studentLoginId">担当教員のID:</label>
-      <input type="text" id="studentLoginId" name="studentLoginId"
-             onkeydown="if(event.key === 'Enter'){checkStudentLogin();}">
-      <button class="login-button" onclick="checkStudentLogin()">ログイン</button>
-      <p id="studentLoginMessage"></p>
-    </div>
+  <h2>生徒用ログインページ</h2>
+  <label for="studentLoginId">ログインID（メールアドレス）:</label>
+  <input type="text" id="studentLoginId" name="studentLoginId">
+  <label for="studentPassword">パスワード:</label>
+  <input type="password" id="studentPassword" name="studentPassword"
+         onkeydown="if(event.key === 'Enter'){checkStudentLogin();}">
+  <button class="login-button" onclick="checkStudentLogin()">ログイン</button>
+  <p id="studentLoginMessage"></p>
+  </div>
 
     <div id="teacher-login" style="display:none;">
       <h2>先生用ログインページ</h2>
@@ -112,6 +114,11 @@
       <div id="teacher-page-content">
         <div class="logout-container">
   <button class="logout-top" onclick="logout()">ログアウトしてトップ画面に戻る</button>
+</div>
+
+<div class="announcement-box">
+  <h2>お知らせ</h2>
+  <p id="announcement-text"></p>
 </div>
 
 <h3 id="teacherName"></h3>

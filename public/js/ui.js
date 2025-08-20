@@ -23,6 +23,8 @@
     }
     
         function showMessage(message) {
+          console.log('showMessageが呼び出されました。メッセージ:', message);
+          
       const messageElement = document.createElement('div');
       messageElement.innerText = message;
       messageElement.style.position = 'fixed';
@@ -39,4 +41,3 @@
         document.body.removeChild(messageElement);
       }, 3000);
     }
-

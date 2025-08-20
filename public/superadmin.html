@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>運営管理者ダッシュボード</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+  <header>
+    <h1>運営管理者ダッシュボード</h1>
+  </header>
+
+  <div class="container">
+    <div id="superadmin-login">
+      <h2>運営管理者 ログイン</h2>
+      <label for="superadminLoginId">ログインID（メールアドレス）:</label>
+      <input type="text" id="superadminLoginId" name="superadminLoginId">
+      <label for="superadminPassword">パスワード:</label>
+      <input type="password" id="superadminPassword" name="superadminPassword"
+             onkeydown="if(event.key === 'Enter'){checkSuperAdminLogin();}">
+      <button class="login-button" onclick="checkSuperAdminLogin()">ログイン</button>
+      <p id="superadminLoginMessage"></p>
+    </div>
+
+    <div id="superadmin-dashboard" style="display:none;">
+      <div class="logout-container">
+        <button class="logout-top" onclick="logout()">ログアウト</button>
+      </div>
+
+      <div class="admin-card">
+        <h2><span class="emoji-icon">🏫</span> 新規学校・管理者登録</h2>
+        <p class="card-description">新しい学校を登録し、その学校の管理者アカウントを同時に発行します。</p>
+        
+        <label for="newSchoolName">学校名:</label>
+        <input type="text" id="newSchoolName" placeholder="〇〇市立△△中学校">
+
+        <label for="schoolAdminEmail">学校管理者 メールアドレス:</label>
+        <input type="text" id="schoolAdminEmail" placeholder="admin@example-school.com">
+        
+        <label for="newSchoolCode">学校ID（半角英数）:</label>
+        <input type="text" id="newSchoolCode" placeholder="例: sunvalley, tokyo-daiichi">
+        <div class="file-help-text" style="margin-top: -5px; margin-bottom: 15px;">
+            生徒のログインIDに使われる、学校固有の短いIDです。後から変更はできません。
+        </div>
+        <button id="createSchoolBtn" class="submit">登録を実行</button>
+        <div id="createSchoolStatus" style="margin-top: 15px;"></div>
+      </div>
+
+      <div class="admin-card">
+        <h2><span class="emoji-icon">🏢</span> 登録済み学校一覧</h2>
+        <div class="table-container">
+            <table id="schoolTable">
+                </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2024 EduSupport. All rights reserved.
+  </footer>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
+<script src="firebase-init.js"></script>
+
+<script src="js/ui.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/superadmin-script.js"></script>
+</body>
+</html>

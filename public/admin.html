@@ -3,66 +3,160 @@
 <head>
 <base target="_top">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>管理者ダッシュボード - 手書き採点アシスタント</title>
+<title>学校管理者ダッシュボード</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="admin-style.css">
 </head>
 <body>
   <header>
-    <h1>管理者ダッシュボード</h1>
+    <h1 id="dashboard-title">学校管理者ダッシュボード</h1>
   </header>
 
   <div class="container">
 
-    <div class="admin-card">
-      <h2><span class="emoji-icon">🏫</span> 学校管理</h2>
-      <p class="card-description">学校の基本情報を登録・編集します。</p>
-      <label for="schoolName">学校名:</label>
-      <input type="text" id="schoolName" placeholder="〇〇市立△△中学校">
-      <button class="submit">学校情報を保存</button>
+    <div id="schooladmin-login">
+      <h2>学校管理者 ログイン</h2>
+      <label for="schoolAdminLoginId">ログインID（メールアドレス）:</label>
+      <input type="text" id="schoolAdminLoginId">
+      <label for="schoolAdminPassword">パスワード:</label>
+      <input type="password" id="schoolAdminPassword" onkeydown="if(event.key === 'Enter'){checkSchoolAdminLogin();}">
+      <button class="login-button" onclick="checkSchoolAdminLogin()">ログイン</button>
+      <p id="schoolAdminLoginMessage"></p>
+    </div>
+
+    <div id="schooladmin-dashboard" style="display:none;">
+    <div class="logout-container">
+        <button class="logout-top" onclick="logout()">ログアウト</button>
     </div>
 
     <div class="admin-card">
-      <h2><span class="emoji-icon">📚</span> 新規クラス作成</h2>
-      <p class="card-description">新しいクラスを作成し、担当教師を割り当てます。</p>
-      <label for="className">クラス名:</label>
-      <input type="text" id="className" placeholder="3年A組">
-      <label for="classYear">年度:</label>
-      <input type="number" id="classYear" placeholder="2025">
-      <label for="classTeachers">担当教師:</label>
-      <textarea id="classTeachers" placeholder="（将来的に教師の検索機能を追加）" rows="3"></textarea>
-      <button class="submit">クラスを作成</button>
-    </div>
+        <h2><span class="emoji-icon">🚀</span> 生徒・クラス一括登録</h2>
+        <p class="card-description">
+            年度初めの生徒とクラスの情報を、CSVファイルを使って一度に登録します。<br>
+            CSVファイルには、以下の列をこの順番で含めてください。<br>
+            <b>必須:</b> 学生番号, 学年, 組, 氏名<br>
+            <b>任意:</b> メールアドレス
+        </p>
 
-    <div class="admin-card">
-      <h2><span class="emoji-icon">👥</span> ユーザー一括登録</h2>
-      <p class="card-description">CSVファイルをアップロードして、教師と生徒のアカウントを一括で作成します。</p>
-      
-      <div id="csvUploadArea">
-        <p>ここにCSVファイルをドラッグ＆ドロップ</p>
-        <p>または</p>
-        <input type="file" id="csvFile" accept=".csv" hidden>
-        <button id="csvSelectBtn">ファイルを選択</button>
-      </div>
+        <label for="importYearSelector">登録対象の年度:</label>
+        <select id="importYearSelector" style="margin-bottom: 15px;">
+            </select>
 
-      <div id="uploadStatus">
+        <div id="csvUploadArea">
+            <p>ここにCSVファイルをドラッグ＆ドロップ</p>
+            <p>または</p>
+            <input type="file" id="csvFile" accept=".csv" hidden>
+            <button id="csvSelectBtn">ファイルを選択</button>
         </div>
-      
-      <button id="csvUploadBtn" class="submit" disabled>アップロードして登録を開始</button>
+        
+        <div id="uploadStatus" style="margin-top: 15px;"></div>
+        
+        <button id="csvUploadBtn" class="submit" disabled>アップロードして登録を開始</button>
     </div>
 
+    <div class="admin-card">
+        <h2><span class="emoji-icon">📊</span> 登録済みデータ表示</h2>
+        <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+                <label for="displayYearSelector">表示年度:</label>
+                <select id="displayYearSelector"></select>
+            </div>
+            <div style="flex: 2;">
+                <label for="classSelector">クラス:</label>
+                <select id="classSelector"></select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3 style="margin-top: 0;">生徒一覧: <span id="studentCount">0名</span></h3>
+            <table id="studentTable">
+                </table>
+        </div>
+    </div>
+</div>
   </div>
 
   <footer>
     &copy; 2024 EduSupport. All rights reserved.
   </footer>
-  
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-  <script src="firebase-init.js"></script> 
+
+  <script src="firebase-init.js"></script>
+
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/admin-script.js"></script>
-  
-  </body>
+
+<div id="createClassModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>新規クラス作成</h3>
+    </div>
+    <label for="newClassName">クラス名:</label>
+    <input type="text" id="newClassName" placeholder="1年A組">
+
+    <label for="newClassYear">年度:</label>
+    <input type="number" id="newClassYear" placeholder="2025">
+
+    <label for="newClassIsActive">状態:</label>
+    <select id="newClassIsActive">
+      <option value="true" selected>✅ アクティブ</option>
+      <option value="false">🔒 非アクティブ</option>
+    </select>
+
+    <div class="button-group" style="margin-top: 20px;">
+      <button id="saveNewClassBtn" class="submit">作成</button>
+      <button id="cancelNewClassBtn" class="cancel-button">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="addStudentModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>生徒をクラスに追加</h3>
+    </div>
+    <label for="newStudentName">氏名:</label>
+    <input type="text" id="newStudentName" placeholder="山田 太郎">
+
+    <label for="newStudentEmail">メールアドレス:</label>
+    <input type="text" id="newStudentEmail" placeholder="student@example.com">
+
+    <div class="button-group" style="margin-top: 20px;">
+      <button id="saveNewStudentBtn" class="submit">追加</button>
+      <button id="cancelNewStudentBtn" class="cancel-button">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<div id="csvUploadModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>CSVで生徒を一括登録</h3>
+        </div>
+        <p class="card-description">
+            クラスに所属させる生徒をCSVファイルで一括登録します。<br>
+            CSVファイルには「氏名」と「メールアドレス」の列を含めてください。
+        </p>
+        <div id="csvUploadArea">
+            <p>ここにCSVファイルをドラッグ＆ドロップ</p>
+            <p>または</p>
+            <input type="file" id="csvFile" accept=".csv" hidden>
+            <button id="csvSelectBtn">ファイルを選択</button>
+        </div>
+        <div id="uploadStatus" style="margin-top: 15px;"></div>
+        <div class="button-group" style="margin-top: 20px;">
+            <button id="csvUploadBtn" class="submit" disabled>アップロードして登録を開始</button>
+            <button id="cancelCsvUploadBtn" class="cancel-button">キャンセル</button>
+        </div>
+    </div>
+</div>
+
+</body>
 </html>
