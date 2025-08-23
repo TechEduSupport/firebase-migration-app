@@ -25,36 +25,55 @@
     </div>
 
     <div id="schooladmin-dashboard" style="display:none;">
-    <div class="logout-container">
-        <button class="logout-top" onclick="logout()">ログアウト</button>
-    </div>
+      <div class="logout-container">
+          <button class="logout-top" onclick="logout()">ログアウト</button>
+      </div>
 
-    <div class="admin-card">
-        <h2><span class="emoji-icon">🚀</span> 生徒・クラス一括登録</h2>
-        <p class="card-description">
-            年度初めの生徒とクラスの情報を、CSVファイルを使って一度に登録します。<br>
-            CSVファイルには、以下の列をこの順番で含めてください。<br>
-            <b>必須:</b> 学生番号, 学年, 組, 氏名<br>
-            <b>任意:</b> メールアドレス
-        </p>
+      <div class="admin-card">
+          <h2><span class="emoji-icon">🚀</span> 生徒・クラス一括登録</h2>
+          <p class="card-description">
+              年度初めの生徒とクラスの情報を、CSVファイルを使って一度に登録します。<br>
+              <b>必須:</b> 学生番号, 学年, 組, 氏名<br>
+              <b>任意:</b> メールアドレス
+          </p>
+          <label for="importYearSelector">登録対象の年度:</label>
+          <select id="importYearSelector" style="margin-bottom: 15px;"></select>
+          <div id="csvUploadArea">
+              <p>ここにCSVファイルをドラッグ＆ドロップするか、ファイルを選択</p>
+              <input type="file" id="csvFile" accept=".csv" hidden>
+              <button id="csvSelectBtn">ファイルを選択</button>
+          </div>
+          <div id="uploadStatus" style="margin-top: 15px;"></div>
+          <button id="csvUploadBtn" class="submit" disabled>アップロードして登録を開始</button>
+      </div>
 
-        <label for="importYearSelector">登録対象の年度:</label>
-        <select id="importYearSelector" style="margin-bottom: 15px;">
-            </select>
+      <div class="admin-card">
+        <h2><span class="emoji-icon">🧑‍🏫</span> 教員管理</h2>
+        <div class="teacher-management-grid">
+          <div class="teacher-register-form">
+            <h4>新規教員登録</h4>
+            <p class="card-description">
+              新しい教員を登録します。登録後、入力されたメールアドレスにパスワード設定の案内が自動で送信されます。
+            </p>
+            <label for="newTeacherName">氏名:</label>
+            <input type="text" id="newTeacherName" placeholder="鈴木 一郎">
+            <label for="newTeacherEmail">メールアドレス:</label>
+            <input type="text" id="newTeacherEmail" placeholder="teacher@example.com">
+            <button id="registerTeacherBtn" class="submit">この内容で登録する</button>
+            <div id="registerTeacherStatus" style="margin-top: 15px;"></div>
+          </div>
 
-        <div id="csvUploadArea">
-            <p>ここにCSVファイルをドラッグ＆ドロップ</p>
-            <p>または</p>
-            <input type="file" id="csvFile" accept=".csv" hidden>
-            <button id="csvSelectBtn">ファイルを選択</button>
+          <div class="teacher-list">
+            <h4>登録済み教員一覧</h4>
+            <div class="table-container" style="max-height: 400px;">
+              <table id="teacherTable">
+                </table>
+            </div>
+          </div>
         </div>
-        
-        <div id="uploadStatus" style="margin-top: 15px;"></div>
-        
-        <button id="csvUploadBtn" class="submit" disabled>アップロードして登録を開始</button>
-    </div>
-
-    <div class="admin-card">
+      </div>
+      
+      <div class="admin-card">
         <h2><span class="emoji-icon">📊</span> 登録済みデータ表示</h2>
         <div style="display: flex; gap: 20px; margin-bottom: 15px;">
             <div style="flex: 1;">
@@ -67,96 +86,122 @@
             </div>
         </div>
 
-        <div class="table-container">
-            <h3 style="margin-top: 0;">生徒一覧: <span id="studentCount">0名</span></h3>
-            <table id="studentTable">
-                </table>
+        <div id="class-details-container" class="class-details-grid" style="display: none;">
+            <div class="class-nav-pane">
+                <ul class="nav-menu">
+                    <li class="nav-item active" onclick="switchTab('students')">生徒名簿</li>
+                    <li class="nav-item" onclick="switchTab('subjects')">授業一覧</li>
+                </ul>
+            </div>
+            <div class="class-content-pane">
+                <div id="tab-content-students" class="tab-content active">
+                    <div class="content-header">
+                        <h3>生徒一覧: <span id="studentCount">0名</span></h3>
+                    </div>
+                    <div class="table-container">
+                        <table id="studentTable"></table>
+                    </div>
+                </div>
+                <div id="tab-content-subjects" class="tab-content">
+                    <div class="content-header">
+                        <h3>授業一覧</h3>
+                        <button id="openNewSubjectModalBtn" class="submit" style="width: auto; padding: 8px 16px;">＋ 新しい授業を登録</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="subjectTable"></table>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <div id="subject-details-container" style="display: none;">
+          <div class="content-header">
+            <button id="backToClassViewBtn" class="cancel-button" style="width: auto; padding: 8px 16px;">← 授業一覧に戻る</button>
+            <h3 id="subject-details-title"></h3>
+            <div class="button-group-right">
+                <button id="editSubjectBtn" class="edit">編集</button>
+                <button id="deleteSubjectBtn" class="delete">削除</button>
+            </div>
+          </div>
+          
+          <div class="admin-card" style="margin-top:0; box-shadow:none; border: 1px solid #e0e0e0;">
+            <h4>受講生徒一覧</h4>
+            <div class="table-container">
+                <table id="subjectStudentTable"></table>
+            </div>
+            <hr>
+            <h4>課題一覧</h4>
+            <div class="table-container">
+                <table id="promptListForSubjectTable"></table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
-  </div>
+  </div> 
 
   <footer>
     &copy; 2024 EduSupport. All rights reserved.
   </footer>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <div id="addSubjectModal" class="modal-overlay">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3>新しい授業の登録</h3>
+      </div>
+      <div class="modal-body">
+        <label for="newSubjectName">授業名:</label>
+        <input type="text" id="newSubjectName" placeholder="例: 数学IA">
+        <label for="newSubjectDescription">授業の説明（任意）:</label>
+        <textarea id="newSubjectDescription" rows="3" placeholder="この授業の目的や内容を簡潔に入力します"></textarea>
+        <label>担当教員（複数選択可）:</label>
+        <div id="teacher-checkbox-list" class="checkbox-list"></div>
+        <label>受講する生徒（デフォルトで全員選択）:</label>
+        <div id="student-checkbox-list" class="checkbox-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveNewSubjectBtn" class="submit">この内容で登録する</button>
+        <button id="cancelNewSubjectBtn" class="cancel-button">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editSubjectModal" class="modal-overlay">
+  <div class="modal-content large">
+    <div class="modal-header">
+      <h3>授業情報の編集</h3>
+    </div>
+    <div class="modal-body">
+      <label for="editSubjectName">授業名:</label>
+      <input type="text" id="editSubjectName">
+
+      <label for="editSubjectDescription">授業の説明（任意）:</label>
+      <textarea id="editSubjectDescription" rows="3"></textarea>
+
+      <label>担当教員（複数選択可）:</label>
+      <div id="edit-teacher-checkbox-list" class="checkbox-list">
+        </div>
+
+      <label>受講する生徒:</label>
+      <div id="edit-student-checkbox-list" class="checkbox-list">
+        </div>
+    </div>
+    <div class="modal-footer">
+      <button id="updateSubjectBtn" class="submit">この内容で更新する</button>
+      <button id="cancelEditSubjectBtn" class="cancel-button">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-
   <script src="firebase-init.js"></script>
-
   <script src="js/ui.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/admin-script.js"></script>
-
-<div id="createClassModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>新規クラス作成</h3>
-    </div>
-    <label for="newClassName">クラス名:</label>
-    <input type="text" id="newClassName" placeholder="1年A組">
-
-    <label for="newClassYear">年度:</label>
-    <input type="number" id="newClassYear" placeholder="2025">
-
-    <label for="newClassIsActive">状態:</label>
-    <select id="newClassIsActive">
-      <option value="true" selected>✅ アクティブ</option>
-      <option value="false">🔒 非アクティブ</option>
-    </select>
-
-    <div class="button-group" style="margin-top: 20px;">
-      <button id="saveNewClassBtn" class="submit">作成</button>
-      <button id="cancelNewClassBtn" class="cancel-button">キャンセル</button>
-    </div>
-  </div>
-</div>
-
-
-<div id="addStudentModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>生徒をクラスに追加</h3>
-    </div>
-    <label for="newStudentName">氏名:</label>
-    <input type="text" id="newStudentName" placeholder="山田 太郎">
-
-    <label for="newStudentEmail">メールアドレス:</label>
-    <input type="text" id="newStudentEmail" placeholder="student@example.com">
-
-    <div class="button-group" style="margin-top: 20px;">
-      <button id="saveNewStudentBtn" class="submit">追加</button>
-      <button id="cancelNewStudentBtn" class="cancel-button">キャンセル</button>
-    </div>
-  </div>
-</div>
-
-<div id="csvUploadModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>CSVで生徒を一括登録</h3>
-        </div>
-        <p class="card-description">
-            クラスに所属させる生徒をCSVファイルで一括登録します。<br>
-            CSVファイルには「氏名」と「メールアドレス」の列を含めてください。
-        </p>
-        <div id="csvUploadArea">
-            <p>ここにCSVファイルをドラッグ＆ドロップ</p>
-            <p>または</p>
-            <input type="file" id="csvFile" accept=".csv" hidden>
-            <button id="csvSelectBtn">ファイルを選択</button>
-        </div>
-        <div id="uploadStatus" style="margin-top: 15px;"></div>
-        <div class="button-group" style="margin-top: 20px;">
-            <button id="csvUploadBtn" class="submit" disabled>アップロードして登録を開始</button>
-            <button id="cancelCsvUploadBtn" class="cancel-button">キャンセル</button>
-        </div>
-    </div>
-</div>
 
 </body>
 </html>

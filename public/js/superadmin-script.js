@@ -30,7 +30,7 @@ async function createSchoolAndAdmin() {
     statusDiv.innerHTML = `<p>処理を開始します...</p>`;
 
     try {
-        const createSchoolFunction = firebase.functions().httpsCallable('createSchoolAndAdmin');
+        const createSchoolFunction = functions.httpsCallable('createSchoolAndAdmin');
         // ★ schoolCodeをCloud Functionに渡す
         const result = await createSchoolFunction({ schoolName, adminEmail, schoolCode });
 

@@ -16,6 +16,7 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
+var functions; // 他のファイルから参照できるようグローバル変数として宣言
 
 // ------------------------------
 // ローカル開発時は各エミュレータに接続
@@ -33,5 +34,12 @@ if (window.location.hostname === "127.0.0.1" || window.location.hostname === "lo
   if (storage.useEmulator) {
     storage.useEmulator("127.0.0.1", 9199);
   }
-  firebase.functions().useEmulator("127.0.0.1", 5001);
+  
+  // Functions Emulator（リージョン指定を含む）
+  functions = firebase.app().functions('asia-northeast1');
+  functions.useEmulator("127.0.0.1", 5001);
+
+} else {
+  // 本番環境（リージョン指定のみ）
+  functions = firebase.app().functions('asia-northeast1');
 }
