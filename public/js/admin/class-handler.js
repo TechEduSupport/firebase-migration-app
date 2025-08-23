@@ -59,13 +59,20 @@ async function loadStudentsForClass(classId) {
     try {
         const classDoc = await db.collection('classes').doc(classId).get();
         if (!classDoc.exists) throw new Error("クラスデータが見つかりません。");
-        const studentIds = classDoc.data().studentIds || [];
+
+        // ▼▼▼ ここから修正 ▼▼▼
+        const studentIdMap = classDoc.data().studentIds || {}; // studentIdsはマップ（オブジェクト）
+        const studentIds = Object.keys(studentIdMap); // Object.keys()でキー（生徒UID）の配列を取得
+
         document.getElementById('studentCount').innerText = `${studentIds.length}名`;
         if (studentIds.length === 0) {
             studentTable.innerHTML = `<thead><tr><th>学生番号</th><th>氏名</th><th>メールアドレス</th></tr></thead><tbody><tr><td colspan="3">このクラスにはまだ生徒が登録されていません。</td></tr></tbody>`;
             return;
         }
+
         const studentPromises = studentIds.map(uid => db.collection('users').doc(uid).get());
+        // ▲▲▲ ここまで修正 ▲▲▲
+        
         const studentDocs = await Promise.all(studentPromises);
         let studentTableBody = '<tbody>';
         studentDocs.forEach(doc => {

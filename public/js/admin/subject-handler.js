@@ -56,8 +56,12 @@ async function openAddSubjectModal() {
                 teacherListDiv.appendChild(label);
             });
         }
+        
+        // ▼▼▼ ここから修正 ▼▼▼
         const classDoc = await db.collection('classes').doc(currentClassId).get();
-        const studentIds = classDoc.data().studentIds || [];
+        const studentIdMap = classDoc.data().studentIds || {}; // studentIdsはマップ（オブジェクト）
+        const studentIds = Object.keys(studentIdMap); // Object.keys()でキー（生徒UID）の配列を取得
+        
         studentListDiv.innerHTML = '';
         if (studentIds.length > 0) {
             const studentPromises = studentIds.map(id => db.collection('users').doc(id).get());
@@ -66,10 +70,12 @@ async function openAddSubjectModal() {
                 if (doc.exists) {
                     const student = doc.data();
                     const label = document.createElement('label');
+                    // すべての生徒をデフォルトでチェック状態にする
                     label.innerHTML = `<input type="checkbox" value="${doc.id}" checked> ${student.studentNumber || ''} ${student.name}`;
                     studentListDiv.appendChild(label);
                 }
             });
+        // ▲▲▲ ここまで修正 ▲▲▲
         } else {
             studentListDiv.innerText = 'このクラスには生徒が登録されていません。';
         }

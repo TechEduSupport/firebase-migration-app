@@ -1,118 +1,235 @@
 // public/js/student.js
 
-let problemDict = {};
-let answerMode = 'image';
+// --- グローバル変数 ---
+let globalStudentId = null;
+let currentStudentInfo = {};
+let subjectsCache = [];
+let promptsCache = [];
+let submissionsCache = [];
 let selectedFile = null;
-let lastSubmissionId = null;
-let globalStudentId = null; // ログインした生徒のUIDを保持
+let answerMode = 'image';
 
-// ------------------------------
-// 生徒に紐づく課題の読み込み（新ロジック）
-// ------------------------------
-async function loadPromptsForStudent(studentUid) {
-  const sel = document.getElementById('promptId');
-  sel.innerHTML = '<option>課題を読み込み中...</option>';
-  sel.disabled = true;
+/**
+ * 生徒ページを初期化する
+ * @param {firebase.User} user - ログインしたユーザーオブジェクト
+ */
+async function initializeStudentPage(user) {
+    globalStudentId = user.uid;
+    document.getElementById('student-page-title').innerText = user.displayName || '生徒';
 
-  try {
-    // 1. 生徒が所属するクラスを探す
-    const classQuery = await db.collection('classes').where('studentIds', 'array-contains', studentUid).get();
-    if (classQuery.empty) {
-      console.log('この生徒が所属するクラスが見つかりません。');
-      sel.innerHTML = '<option>表示できる課題がありません</option>';
-      return;
+    try {
+        const userDoc = await db.collection('users').doc(globalStudentId).get();
+        if (userDoc.exists) {
+            currentStudentInfo = { id: userDoc.id, ...userDoc.data() };
+        } else {
+            throw new Error('生徒情報が見つかりません。');
+        }
+        await loadSubjectsForStudent();
+    } catch (error) {
+        console.error("生徒ページの初期化中に致命的なエラー:", error);
+        alert(`エラー: ${error.message}`);
+        logout();
     }
-
-    // 2. 所属クラスの担当教員IDをすべて集める
-    let teacherIds = [];
-    classQuery.forEach(doc => {
-      const classData = doc.data();
-      // teacherIdsはオブジェクトのキーとして保存されていると仮定
-      if (classData.teachers) {
-        teacherIds = teacherIds.concat(Object.keys(classData.teachers));
-      }
-    });
-
-    // 重複する教員IDを削除
-    const uniqueTeacherIds = [...new Set(teacherIds)];
-
-    if (uniqueTeacherIds.length === 0) {
-        console.log('担当教員が見つかりません。');
-        sel.innerHTML = '<option>表示できる課題がありません</option>';
-        return;
-    }
-
-    // 3. 担当教員が作成した課題を取得する
-    const promptQuery = await db.collection('prompts')
-      .where('teacherId', 'in', uniqueTeacherIds)
-      .where('isVisible', '==', true)
-      .orderBy('createdAt', 'desc')
-      .get();
-
-    // 4. プルダウンメニューを生成
-    sel.innerHTML = '';
-    problemDict = {};
-    const firstOpt = document.createElement('option');
-    firstOpt.value = '';
-    firstOpt.textContent = '▼ ここから課題を選択してください';
-    sel.add(firstOpt);
-
-    promptQuery.forEach((doc) => {
-      const data = doc.data();
-      const opt = document.createElement('option');
-      opt.value = doc.id;
-      opt.text = `${doc.id} - ${data.title}`;
-      sel.add(opt);
-      problemDict[doc.id] = {
-        question: data.question,
-        questionImageUrl: data.questionImageUrl || '',
-      };
-    });
-
-  } catch (error) {
-    console.error('課題の読み込みに失敗しました:', error);
-    sel.innerHTML = '<option>課題の読み込みに失敗</option>';
-  } finally {
-    sel.disabled = false;
-  }
 }
 
+/**
+ * 生徒が履修している授業をFirestoreから読み込み、プルダウンに表示する
+ */
+async function loadSubjectsForStudent() {
+    const sel = document.getElementById('subject-select');
+    sel.innerHTML = '<option value="">授業を読み込み中...</option>';
+    sel.disabled = true;
 
-// --- 以下の関数は既存のままですが、念のため全体を貼り付けます ---
+    try {
+        const snapshot = await db.collection('subjects')
+            .where('studentIds', 'array-contains', globalStudentId)
+            .where('isActive', '==', true)
+            .orderBy('name')
+            .get();
 
-function showProblemText() {
-    const pid = document.getElementById('promptId').value;
-    if (!pid) {
-        document.getElementById('problem-area').style.display = 'none';
+        subjectsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        sel.innerHTML = '<option value="">▼ 授業を選択してください</option>';
+        if (subjectsCache.length === 0) {
+            sel.innerHTML = '<option value="">履修中の授業がありません</option>';
+            return;
+        }
+
+        subjectsCache.forEach(subject => {
+            const opt = document.createElement('option');
+            opt.value = subject.id;
+            opt.textContent = subject.name;
+            sel.add(opt);
+        });
+
+    } catch (error) {
+        console.error("授業の読み込みに失敗:", error);
+        sel.innerHTML = '<option value="">読み込みに失敗しました</option>';
+    } finally {
+        sel.disabled = false;
+    }
+}
+
+/**
+ * 授業が選択されたときの処理
+ */
+async function handleSubjectSelection() {
+    const subjectId = document.getElementById('subject-select').value;
+    const promptSelect = document.getElementById('prompt-select');
+    const historyCard = document.getElementById('history-card');
+    const submissionCard = document.getElementById('submission-card');
+
+    promptSelect.innerHTML = '';
+    promptSelect.disabled = true;
+    submissionCard.style.display = 'none';
+    historyCard.style.display = 'none';
+    resetSubmissionArea();
+
+    if (!subjectId) return;
+
+    await loadPromptsForSubject(subjectId);
+    await loadSubmissionsForSubject(subjectId);
+    
+    populatePromptSelect();
+    populateSubmissionHistory();
+    
+    promptSelect.disabled = false;
+    historyCard.style.display = 'block';
+}
+
+/**
+ * 選択された授業に紐づく課題をFirestoreから読み込む
+ * @param {string} subjectId - 授業のドキュメントID
+ */
+async function loadPromptsForSubject(subjectId) {
+    const sel = document.getElementById('prompt-select');
+    sel.innerHTML = '<option value="">課題を読み込み中...</option>';
+    try {
+        const snapshot = await db.collection('prompts')
+            .where('subjectId', '==', subjectId)
+            .where('isVisible', '==', true)
+            .orderBy('createdAt', 'desc')
+            .get();
+        promptsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("課題の読み込みに失敗:", error);
+        promptsCache = [];
+    }
+}
+
+/**
+ * 選択された授業の提出履歴をFirestoreから読み込む
+ * @param {string} subjectId - 授業のドキュメントID
+ */
+async function loadSubmissionsForSubject(subjectId) {
+    try {
+        const snapshot = await db.collection('submissions')
+            .where('subjectId', '==', subjectId)
+            .where('studentId', '==', globalStudentId)
+            .orderBy('submittedAt', 'desc')
+            .get();
+        submissionsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("提出履歴の読み込みに失敗:", error);
+        submissionsCache = [];
+    }
+}
+
+/**
+ * 課題選択プルダウンを描画する（提出状況を反映）
+ */
+function populatePromptSelect() {
+    const sel = document.getElementById('prompt-select');
+    sel.innerHTML = '<option value="">▼ 課題を選択してください</option>';
+    if(promptsCache.length === 0) {
+        sel.innerHTML = '<option value="">提出できる課題がありません</option>';
         return;
     }
-    const data = problemDict[pid] || { question: '', questionImageUrl: '' };
-    const questionArea = document.getElementById('problem-area');
-    const questionText = document.getElementById('problem-text');
-    const questionImage = document.getElementById('problem-image');
-    const questionPdfContainer = document.getElementById('pdf-container');
-    const questionPdf = document.getElementById('problem-pdf');
+    promptsCache.forEach(prompt => {
+        const isSubmitted = submissionsCache.some(s => s.promptId === prompt.id);
+        const opt = document.createElement('option');
+        opt.value = prompt.id;
+        opt.textContent = `${isSubmitted ? '✅[提出済み] ' : '📝[未提出] '}${prompt.title}`;
+        sel.add(opt);
+    });
+}
 
-    questionText.innerText = data.question || '';
-    if (data.questionImageUrl && typeof data.questionImageUrl === 'string') {
-        if (data.questionImageUrl.toLowerCase().includes('.pdf')) {
-            questionPdf.src = data.questionImageUrl;
-            questionPdfContainer.style.display = 'block';
-            questionImage.style.display = 'none';
+/**
+ * 課題が選択されたときの処理
+ */
+function handlePromptSelection() {
+    const promptId = document.getElementById('prompt-select').value;
+    const submissionCard = document.getElementById('submission-card');
+    resetSubmissionArea();
+
+    if (!promptId) {
+        submissionCard.style.display = 'none';
+        return;
+    }
+
+    const prompt = promptsCache.find(p => p.id === promptId);
+    if (!prompt) return;
+
+    document.getElementById('problem-text').innerText = prompt.question || '問題文はありません。';
+    const problemImage = document.getElementById('problem-image');
+    const pdfContainer = document.getElementById('pdf-container');
+    const problemPdf = document.getElementById('problem-pdf');
+
+    if (prompt.questionImageUrl) {
+        if (prompt.questionImageUrl.toLowerCase().includes('.pdf')) {
+            problemPdf.src = prompt.questionImageUrl;
+            pdfContainer.style.display = 'block';
+            problemImage.style.display = 'none';
         } else {
-            questionImage.src = data.questionImageUrl;
-            questionImage.style.display = 'block';
-            questionPdfContainer.style.display = 'none';
+            problemImage.src = prompt.questionImageUrl;
+            problemImage.style.display = 'block';
+            pdfContainer.style.display = 'none';
         }
     } else {
-        questionImage.style.display = 'none';
-        questionPdfContainer.style.display = 'none';
+        problemImage.style.display = 'none';
+        pdfContainer.style.display = 'none';
     }
-    questionArea.style.display = 'block';
+
+    submissionCard.style.display = 'block';
+    const isSubmitted = submissionsCache.some(s => s.promptId === promptId);
+    document.getElementById('submit-button').textContent = isSubmitted ? 'この内容で再提出する' : 'この内容で提出する';
 }
 
-function handleImageUpload(event) {
-    selectedFile = event.target.files[0];
+/**
+ * 提出履歴テーブルを描画する
+ */
+function populateSubmissionHistory() {
+    const historyDiv = document.getElementById('submission-history');
+    if (submissionsCache.length === 0) {
+        historyDiv.innerHTML = '<p>この授業の提出履歴はありません。</p>';
+        return;
+    }
+    let tableHTML = `<table id="submission-history-table"><thead><tr><th>課題名</th><th>提出日時</th><th>評価</th><th>操作</th></tr></thead><tbody>`;
+    submissionsCache.forEach(submission => {
+        const prompt = promptsCache.find(p => p.id === submission.promptId);
+        const submittedAt = submission.submittedAt ? submission.submittedAt.toDate().toLocaleString('ja-JP') : '不明';
+        const score = (submission.score !== null) ? `${submission.score}点` : '採点中';
+        tableHTML += `
+            <tr>
+                <td>${prompt ? prompt.title : '不明な課題'}</td>
+                <td>${submittedAt}</td>
+                <td>${score}</td>
+                <td>
+                    <button class="result" onclick="showFeedback('${submission.id}')" ${!submission.feedback ? 'disabled' : ''}>
+                        フィードバックを見る
+                    </button>
+                </td>
+            </tr>`;
+    });
+    tableHTML += '</tbody></table>';
+    historyDiv.innerHTML = tableHTML;
+}
+
+function resetSubmissionArea() {
+    document.getElementById('uploadImage').value = '';
+    document.getElementById('textAnswer').value = '';
+    document.getElementById('studentMessage').textContent = '';
+    selectedFile = null;
     enableSubmitButton();
 }
 
@@ -125,31 +242,23 @@ function selectAnswerMode(mode) {
     enableSubmitButton();
 }
 
+function handleImageUpload(event) {
+    selectedFile = event.target.files[0];
+    enableSubmitButton();
+}
+
 function enableSubmitButton() {
-    const hasNameOrNumber = document.getElementById('studentName').value.trim() !== '' || document.getElementById('studentNumber').value.trim() !== '';
-    const hasSelectedPrompt = document.getElementById('promptId').value.trim() !== '';
-    const hasImage = answerMode === 'image' && selectedFile;
-    const hasText = answerMode === 'text' && document.getElementById('textAnswer').value.trim() !== '';
-    document.getElementById('submit-button').disabled = !(hasNameOrNumber && hasSelectedPrompt && (answerMode === 'image' ? hasImage : hasText));
+    const hasPrompt = !!document.getElementById('prompt-select').value;
+    const hasContent = (answerMode === 'image' && selectedFile) || (answerMode === 'text' && document.getElementById('textAnswer').value.trim() !== '');
+    document.getElementById('submit-button').disabled = !(hasPrompt && hasContent);
 }
 
-function showMessage(msg) {
-    const el = document.getElementById('studentMessage');
-    el.innerText = msg;
-    el.style.display = 'block';
-}
-
-async function submitReport() {
-    const studentName = document.getElementById('studentName').value.trim();
-    const studentNumber = document.getElementById('studentNumber').value.trim();
-    const promptId = document.getElementById('promptId').value;
-
-    if (!studentName && !studentNumber) {
-        showMessage('氏名または出席番号を入力してください。');
-        return;
-    }
-    if (!promptId) {
-        showMessage('課題を選択してください。');
+async function submitAnswer() {
+    const subjectId = document.getElementById('subject-select').value;
+    const promptId = document.getElementById('prompt-select').value;
+    const subject = subjectsCache.find(s => s.id === subjectId);
+    if (!subject) {
+        alert("授業情報が見つかりません。");
         return;
     }
 
@@ -160,62 +269,87 @@ async function submitReport() {
     try {
         let answerImageUrl = '';
         if (answerMode === 'image' && selectedFile) {
-            const storageRef = storage.ref().child(`submissions/${globalStudentId}/${Date.now()}_${selectedFile.name}`);
-            await storageRef.put(selectedFile);
-            answerImageUrl = await storageRef.getDownloadURL();
+            const storagePath = `submissions/${currentStudentInfo.schoolId}/${subject.classId}/${subjectId}/${globalStudentId}/${Date.now()}_${selectedFile.name}`;
+            const storageRef = storage.ref().child(storagePath);
+            const uploadTask = await storageRef.put(selectedFile);
+            answerImageUrl = await uploadTask.ref.getDownloadURL();
         }
-        const textAnswer = answerMode === 'text' ? document.getElementById('textAnswer').value.trim() : '';
+        
+        const textAnswer = (answerMode === 'text') ? document.getElementById('textAnswer').value.trim() : '';
+        const existingSubmission = submissionsCache.find(s => s.promptId === promptId);
 
-        const docRef = await db.collection('submissions').add({
-            promptId,
-            classId: '', // TODO: どのクラスの課題として提出したか記録
-            studentId: globalStudentId, // 提出者をUIDで記録
-            answerImageUrl,
+        const submissionData = {
+            studentId: globalStudentId,
+            schoolId: currentStudentInfo.schoolId,
+            classId: subject.classId,
+            subjectId: subjectId,
+            promptId: promptId,
+            answerImageUrl: answerImageUrl,
+            textAnswer: textAnswer,
+            submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
             score: null,
             feedback: '',
-            submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            textAnswer,
-        });
-        lastSubmissionId = docRef.id;
+        };
 
-        showMessage('送信が完了しました。');
-        document.getElementById('rating-section').style.display = 'block';
-        submitButton.style.display = 'none';
+        if (existingSubmission) {
+            await db.collection('submissions').doc(existingSubmission.id).update(submissionData);
+        } else {
+            await db.collection('submissions').add(submissionData);
+        }
+
+        showMessage('提出が完了しました。');
+        document.getElementById('submission-card').style.display = 'none';
+        await handleSubjectSelection();
+
     } catch (error) {
-        console.error('送信中にエラーが発生しました:', error);
+        console.error("提出エラー:", error);
         showMessage('エラーが発生しました。もう一度お試しください。');
-        submitButton.disabled = false;
     } finally {
+        submitButton.disabled = false;
         document.getElementById('loading-overlay').style.display = 'none';
     }
 }
 
-function submitRating() {
-    const rating = Number(document.getElementById('rating').value);
-    if (!lastSubmissionId) return;
-    db.collection('submissions')
-        .doc(lastSubmissionId)
-        .update({ rating })
-        .then(() => {
-            alert('採点精度の評価が送信されました。');
-            document.getElementById('rating-section').style.display = 'none';
-        })
-        .catch((error) => {
-            console.error('評価送信エラー:', error);
-        });
+function showFeedback(submissionId) {
+    const submission = submissionsCache.find(s => s.id === submissionId);
+    if (!submission) return;
+    const modalBody = document.getElementById('feedback-modal-body');
+    let contentHTML = `<h4>提出した解答</h4>`;
+    if (submission.textAnswer) {
+        contentHTML += `<div class="result-box">${escapeHtml(submission.textAnswer)}</div>`;
+    } else if (submission.answerImageUrl) {
+        contentHTML += `<img src="${submission.answerImageUrl}" style="max-width: 100%; border-radius: 4px;">`;
+    }
+    contentHTML += `<h4 style="margin-top: 20px;">AIからのフィードバック</h4>
+                  <div class="result-box">${submission.feedback || 'フィードバックはありません。'}</div>`;
+    modalBody.innerHTML = contentHTML;
+    document.getElementById('feedback-modal').style.display = 'flex';
 }
 
-function resetForm() {
-    document.getElementById('promptId').selectedIndex = 0;
-    document.getElementById('uploadImage').value = '';
-    selectedFile = null;
-    document.getElementById('studentMessage').innerText = '';
-    document.getElementById('textAnswer').value = '';
-    const submitButton = document.getElementById('submit-button');
-    submitButton.disabled = true;
-    submitButton.style.display = 'block';
-    const ratingButton = document.getElementById('submit-rating-button');
-    ratingButton.disabled = true;
-    document.getElementById('rating-section').style.display = 'none';
-    showProblemText();
+function closeFeedbackModal() {
+    document.getElementById('feedback-modal').style.display = 'none';
 }
+
+function showMessage(msg) {
+    const el = document.getElementById('studentMessage');
+    el.textContent = msg;
+    setTimeout(() => { el.textContent = ''; }, 5000);
+}
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[&<>"']/g, (match) => ({'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#39;'}[match]));
+}
+
+/**
+ * ページ読み込み完了時のエントリーポイント
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      initializeStudentPage(user);
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+});

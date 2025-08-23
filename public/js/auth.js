@@ -1,11 +1,8 @@
-// 認証とログイン関連の処理をまとめたスクリプト
-// すべてFirebase SDKを利用し、Apps Scriptへの依存を排除する
-
 // グローバルに保持する変数（ログイン中の先生のUID）
 let globalTeacherId = null;
 
 // ------------------------------
-// 生徒用ログイン処理（メール/パスワード認証に変更）
+// 生徒用ログイン処理
 // ------------------------------
 function checkStudentLogin() {
   const email = document.getElementById('studentLoginId').value;
@@ -17,44 +14,22 @@ function checkStudentLogin() {
   loginButton.innerText = 'ログイン中...';
   loginButton.disabled = true;
 
-  auth
-    .signInWithEmailAndPassword(email, password)
+  auth.signInWithEmailAndPassword(email, password)
     .then((userCredential) => {
-      const user = userCredential.user;
-      console.log('生徒としてFirebaseログイン成功:', user.email);
-
-      // ログインした生徒のUIDをグローバル変数に保持
-      globalStudentId = user.uid; // ※後でstudent.jsで使う
-
-      // 画面遷移
-      document.getElementById('student-login').style.display = 'none';
-      document.getElementById('student-page').style.display = 'block';
-      document.querySelector('#student-page .logout-container').style.display = 'block';
-
-      // 生徒の名前などをページに表示（任意）
-      document.getElementById('studentName').value = user.displayName || '';
-
-
-      // 生徒のクラス情報を基に課題一覧を読み込む
-      loadPromptsForStudent(user.uid);
+      console.log('生徒としてFirebaseログイン成功:', userCredential.user.email);
+      // ★ ログイン成功後、生徒用ページに遷移
+      window.location.href = 'student.html';
     })
     .catch((error) => {
       console.error('生徒ログインエラー:', error);
-      if (
-        error.code === 'auth/user-not-found' ||
-        error.code === 'auth/wrong-password' ||
-        error.code === 'auth/invalid-credential'
-      ) {
-        messageElement.innerText = 'メールアドレスまたはパスワードが間違っています。';
-      } else {
-        messageElement.innerText = 'ログインに失敗しました。';
-      }
+      messageElement.innerText = 'メールアドレスまたはパスワードが間違っています。';
     })
     .finally(() => {
       loginButton.innerText = 'ログイン';
       loginButton.disabled = false;
     });
 }
+
 // ------------------------------
 // 先生用メール/パスワード認証
 // ------------------------------
@@ -68,37 +43,15 @@ function checkTeacherLogin() {
   loginButton.innerText = 'ログイン中...';
   loginButton.disabled = true;
 
-  auth
-    .signInWithEmailAndPassword(email, password)
+  auth.signInWithEmailAndPassword(email, password)
     .then((userCredential) => {
-      const user = userCredential.user;
-      console.log('Firebaseログイン成功:', user.email);
-
-      globalTeacherId = user.uid;
-
-      // 画面を先生用ページに切り替え
-      document.getElementById('teacher-login').style.display = 'none';
-      document.getElementById('teacher-page').style.display = 'block';
-      document.getElementById('teacherName').innerText = `ようこそ、${user.email}さん`;
-      document.getElementById('displayedLoginId').innerText = user.email;
-      document.getElementById('displayedPassword').innerText = '********';
-      document.querySelector('#teacher-page .logout-container').style.display = 'block';
-
-      // Firestoreから課題を取得
-      fetchTeacherPrompts(user.uid);
-      document.getElementById('announcement-text').textContent = '現在お知らせはありません。';
+      console.log('Firebaseログイン成功:', userCredential.user.email);
+      // ★ ログイン成功後、先生用ページに遷移
+      window.location.href = 'teacher.html';
     })
     .catch((error) => {
       console.error('Firebaseログインエラー:', error.code, error.message);
-      if (
-        error.code === 'auth/user-not-found' ||
-        error.code === 'auth/wrong-password' ||
-        error.code === 'auth/invalid-credential'
-      ) {
-        messageElement.innerText = 'メールアドレスまたはパスワードが間違っています。';
-      } else {
-        messageElement.innerText = 'ログインに失敗しました。管理者に連絡してください。';
-      }
+      messageElement.innerText = 'メールアドレスまたはパスワードが間違っています。';
     })
     .finally(() => {
       loginButton.innerText = 'ログイン';
@@ -111,29 +64,15 @@ function checkTeacherLogin() {
 // ------------------------------
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  const messageElement = document.getElementById('teacherLoginMessage');
-
-  auth
-    .signInWithPopup(provider)
+  auth.signInWithPopup(provider)
     .then((result) => {
-      const user = result.user;
-      console.log('Googleログイン成功:', user.email);
-      messageElement.innerText = '';
-
-      globalTeacherId = user.uid;
-      document.getElementById('teacher-login').style.display = 'none';
-      document.getElementById('teacher-page').style.display = 'block';
-      document.getElementById('teacherName').innerText = `ようこそ、${user.displayName || user.email}さん`;
-      document.getElementById('displayedLoginId').innerText = user.email;
-      document.getElementById('displayedPassword').innerText = '（Googleログイン）';
-      document.querySelector('#teacher-page .logout-container').style.display = 'block';
-
-      fetchTeacherPrompts(user.uid); // Firestoreから先生の課題を取得
-      document.getElementById('announcement-text').textContent = '現在お知らせはありません。';
+      console.log('Googleログイン成功:', result.user.email);
+      // ★ ログイン成功後、先生用ページに遷移
+      window.location.href = 'teacher.html';
     })
     .catch((error) => {
       console.error('Googleログインエラー:', error);
-      messageElement.innerText = 'Googleログインに失敗しました。ポップアップがブロックされていないか確認してください。';
+      document.getElementById('teacherLoginMessage').innerText = 'Googleログインに失敗しました。';
     });
 }
 
@@ -141,57 +80,14 @@ function signInWithGoogle() {
 // ログアウト処理
 // ------------------------------
 function logout() {
-  auth
-    .signOut()
-    .then(() => {
-      console.log('Firebaseからログアウトしました。');
-
-      document.getElementById('teacher-page').style.display = 'none';
-      document.getElementById('student-page').style.display = 'none';
-      document.getElementById('bulk-grading-page').style.display = 'none';
-      document.getElementById('top-page').style.display = 'block';
-      document.getElementById('usageCountDisplay').textContent = '';
-
-      document.querySelectorAll('.logout-container').forEach(function (container) {
-        container.style.display = 'none';
-      });
-
-      globalTeacherId = null;
-
-      document.getElementById('studentLoginId').value = '';
-      document.getElementById('studentLoginMessage').innerText = '';
-      document.getElementById('teacherLoginId').value = '';
-      document.getElementById('teacherPassword').value = '';
-      document.getElementById('teacherLoginMessage').innerText = '';
-      document.getElementById('studentNumber').value = '';
-      document.getElementById('studentName').value = '';
-      document.getElementById('promptId').innerHTML = '';
-      document.getElementById('uploadImage').value = '';
-      document.getElementById('studentMessage').innerHTML = '';
-      document.getElementById('textAnswer').value = '';
-      document.getElementById('problem-text').innerHTML = '';
-      document.getElementById('problem-area').style.display = 'none';
-      document.getElementById('teacherName').innerText = '';
-      document.getElementById('displayedLoginId').innerText = '';
-      document.getElementById('displayedPassword').innerText = '';
-      document.getElementById('announcement-text').innerHTML = '';
-      document.getElementById('promptTable').innerHTML = '';
-      document.getElementById('newPromptNote').value = '';
-      document.getElementById('newPromptText').value = '';
-      document.getElementById('newQuestion').value = '';
-      document.getElementById('newPromptVisibility').value = '表示';
-      document.getElementById('checkResultContent').innerHTML = '';
-      document.getElementById('checkResultBox').style.display = 'none';
-      document.getElementById('rating-section').style.display = 'none';
-      document.getElementById('rating').value = '5';
-      document.getElementById('submit-rating-button').disabled = true;
-
-      showTopPage();
-    })
-    .catch((error) => {
-      console.error('ログアウトエラー:', error);
-      alert('ログアウト中にエラーが発生しました。');
-    });
+  auth.signOut().then(() => {
+    console.log('Firebaseからログアウトしました。');
+    // ★ ログアウト後、トップページに遷移
+    window.location.href = 'index.html';
+  }).catch((error) => {
+    console.error('ログアウトエラー:', error);
+    alert('ログアウト中にエラーが発生しました。');
+  });
 }
 
 // ------------------------------

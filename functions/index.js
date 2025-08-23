@@ -2,22 +2,17 @@
 
 const admin = require("firebase-admin");
 
-// Firebase Admin SDKを初期化
-// これを最初に行うことで、他のファイルでadminインスタンスを使い回せます。
+// Firebase Admin SDKを一度だけ初期化します
 admin.initializeApp();
 
-// 各機能ファイルからエクスポートされた関数を読み込む
+// 各機能ファイルからエクスポートされた関数をまとめて読み込みます
 const usersFunctions = require('./src/users');
-const schoolsFunctions = require('./src/schools');
+const schoolsFunctions = require('./src/schools'); // ← ファイル名を修正
 const subjectsFunctions = require('./src/subjects');
 
-// 読み込んだ関数をFirebase Functionsとして再度エクスポートする
-exports.bulkCreateUsers = usersFunctions.bulkCreateUsers;
-exports.createTeacher = usersFunctions.createTeacher;
-
-exports.createSchoolAndAdmin = schoolsFunctions.createSchoolAndAdmin;
-exports.bulkImportSchoolData = schoolsFunctions.bulkImportSchoolData;
-
-exports.createSubject = subjectsFunctions.createSubject;
-exports.deleteSubject = subjectsFunctions.deleteSubject;
-exports.updateSubject = subjectsFunctions.updateSubject;
+// スプレッド構文(...)を使って、読み込んだすべての関数をまとめてエクスポートします
+module.exports = {
+  ...usersFunctions,
+  ...schoolsFunctions,
+  ...subjectsFunctions,
+};

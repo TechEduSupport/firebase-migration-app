@@ -99,3 +99,23 @@ async function fetchTeacherPrompts(teacherUid) {
     populatePromptTable([]);
   }
 }
+
+/**
+ * ページ読み込み完了時のエントリーポイント
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      // ログインしているユーザーがいれば、ページの初期化処理を開始
+      globalTeacherId = user.uid;
+      fetchTeacherPrompts(user.uid);
+      document.getElementById('teacherName').innerText = `ようこそ、${user.displayName || user.email}さん`;
+      document.getElementById('displayedLoginId').innerText = user.email;
+      // TODO: パスワード変更モーダルや一括採点ページの表示ロジックをここに追加
+    } else {
+      // ログインしていなければ、トップページに強制的に戻す
+      console.log("No user signed in on teacher page. Redirecting...");
+      window.location.href = 'index.html';
+    }
+  });
+});
