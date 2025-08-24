@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>先生用ページ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>手書き採点アシスタント</h1>
+    <div id="usageCountDisplay" style="text-align: center; font-size: 16px; font-weight: bold;"></div>
+  </header>
+  <div class="container">
+    <div id="teacher-page">
+       <div class="logout-container" style="display: block;">
+        <button class="logout-top" onclick="logout()">ログアウト</button>
+      </div>
+      <div id="teacher-page-content">
+        <div class="announcement-box">
+          <h2>お知らせ</h2>
+          <p id="announcement-text"></p>
+        </div>
+        <h3 id="teacherName"></h3>
+        <button class="bulk-grading">一括採点モードへ</button>
+        <h3>ログインID: <span id="displayedLoginId"></span></h3>
+        <h3>パスワード:
+          <span id="displayedPassword"></span>
+          <button class="change-password-button" onclick="openChangePasswordModal()">パスワードを変更する</button>
+        </h3>
+        <h3>課題・採点基準の編集</h3>
+        <div class="table-container">
+          <table id="promptTable"></table>
+        </div>
+        <div class="add-prompt-section">
+          <h3>新しい採点基準の作成</h3>
+          <label for="newPromptNote">タイトル：</label>
+          <textarea id="newPromptNote" style="height: 100px; width: 100%;"></textarea>
+          <label for="newQuestion">問題文：</label>
+          <textarea id="newQuestion" style="height: 200px; width: 100%;"></textarea>
+          <label for="newFileForPrompt">問題の画像またはPDFファイル（任意）：</label>
+          <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
+          <label for="newPromptText">採点基準：</label>
+          <textarea id="newPromptText" style="height: 300px; width: 100%;"></textarea>
+          <label for="newPromptVisibility">生徒用ページでの表示：</label>
+          <select id="newPromptVisibility">
+            <option value="表示" selected>表示</option>
+            <option value="非表示">非表示</option>
+          </select>
+          <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    &copy; 2024 EduSupport. All rights reserved.
+  </footer>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
+    <script src="firebase-init.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/teacher.js"></script>
+    <script src="js/prompttable.js"></script>
+    </body>
+</html>

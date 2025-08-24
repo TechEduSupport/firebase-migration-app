@@ -1,0 +1,19 @@
+{
+  "name": "prompts/WxO1AVwZBKcZXBoYcA5bOTzLl7Zl/LS7Zy47d6LQVwORQL2x8/印鑑届出書（オンライン様式）.pdf",
+  "bucket": "tsa-0503.appspot.com",
+  "metageneration": 1,
+  "generation": 1755588314206,
+  "contentType": "application/pdf",
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "downloadTokens": [
+    "cc4a86fc-66bc-44ad-b958-3896b9e5d6bf"
+  ],
+  "etag": "CHCzlUQgj6w7IdHWngCgwI71xIs",
+  "customMetadata": {},
+  "timeCreated": "2025-08-19T07:25:14.206Z",
+  "updated": "2025-08-19T07:25:14.206Z",
+  "size": 353031,
+  "md5Hash": "pyt0at+D37O5ImBM668iBw==",
+  "crc32c": "3081211555"
+}

@@ -1,5 +1,5 @@
-// あなたのウェブアプリのFirebase設定
-// TODO: この部分はあなたのプロジェクトの情報に書き換えてください
+// Firebase初期化設定
+// ※プロジェクト固有の情報に置き換えて使用する
 const firebaseConfig = {
   apiKey: "AIzaSyBmZF5y9z8H8CsMtTgNwo50d7qOr6jdIec",
   authDomain: "tsa-0503.firebaseapp.com",
@@ -9,26 +9,34 @@ const firebaseConfig = {
   appId: "1:283742763295:web:ed8c68433ecbe303bad82a"
 };
 
-// Firebaseを初期化
+// アプリを初期化
 firebase.initializeApp(firebaseConfig);
 
-// 他のファイルで `auth` という変数を使えるように定義
+// 各Firebaseサービスの参照を取得
 const auth = firebase.auth();
-const db = firebase.firestore(); 
+const db = firebase.firestore();
+const storage = firebase.storage();
+const functions = firebase.functions(); // ★★★ 変更点 ★★★
 
-// --- ▼▼▼ ここから下を追加 ▼▼▼ ---
-
-// もしローカル環境で実行されている場合、エミュレータに接続する
+// ------------------------------
+// ローカル開発時は各エミュレータに接続
+// ------------------------------
 if (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") {
   console.log("ローカル開発環境を検出。エミュレータに接続します。");
-  
-  // Authentication Emulatorに接続
+
+  // Authentication Emulator
   auth.useEmulator("http://127.0.0.1:9099");
-  
-  // Firestore Emulatorに接続
+
+  // Firestore Emulator
   db.useEmulator("127.0.0.1", 8080);
+
+  // Storage Emulator
+  storage.useEmulator("127.0.0.1", 9199);
   
-  // (将来的にはFunctionsも)
-  // const functions = firebase.functions();
-  // functions.useEmulator("127.0.0.1", 5001);
+  // Functions Emulator
+  functions.useEmulator("127.0.0.1", 5001);
+
+} else {
+  // 本番環境（リージョン指定）
+  // firebase.functions('asia-northeast1'); // 本番環境では必要に応じてリージョンを指定
 }

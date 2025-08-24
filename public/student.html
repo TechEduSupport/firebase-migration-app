@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>生徒用ページ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>手書き採点アシスタント</h1>
+  </header>
+  <div class="container">
+    <div id="student-page">
+      <div class="logout-container" style="display: block;">
+          <button class="logout-top" onclick="logout()">ログアウト</button>
+      </div>
+      <h2><span id="student-page-title"></span>さんのページ</h2>
+      <div id="student-page-content">
+        <div class="admin-card">
+          <h3>課題選択</h3>
+          <div class="edit-form-grid" style="grid-template-columns: 120px 1fr;">
+            <label for="subject-select">授業:</label>
+            <select id="subject-select" onchange="handleSubjectSelection()"></select>
+            <label for="prompt-select">課題:</label>
+            <select id="prompt-select" onchange="handlePromptSelection()" disabled></select>
+          </div>
+        </div>
+        <div id="submission-card" class="admin-card" style="display: none;">
+          <div id="problem-area">
+            <h4>問題</h4>
+            <div id="problem-text" style="white-space:pre-wrap; border:1px solid #ccc; padding:15px; border-radius:6px; background-color: #f9f9f9; max-height: 400px; overflow-y: auto;"></div>
+            <img id="problem-image" style="display:none; max-width:100%; height:auto; margin-top:15px; border-radius: 6px;">
+            <div class="pdf-container-a4" id="pdf-container" style="margin-top:15px;">
+              <iframe id="problem-pdf" style="border: 1px solid #ccc; width: 100%; height: 100%;"></iframe>
+            </div>
+          </div>
+          <div id="submission-area" style="margin-top: 20px;">
+            <h4>解答を提出</h4>
+             <div id="answer-source-group" style="margin-bottom:15px;">
+              <span>解答方法:</span>
+              <button id="btn-image" class="src-btn active" onclick="selectAnswerMode('image')">画像</button>
+              <button id="btn-text" class="src-btn" onclick="selectAnswerMode('text')">テキスト</button>
+            </div>
+            <div id="image-input-area">
+              <label for="uploadImage">解答の画像をアップロード:</label>
+              <input type="file" id="uploadImage" accept="image/jpeg, image/jpg, image/png" capture="environment" onchange="handleImageUpload(event)">
+            </div>
+            <div id="text-input-area" style="display:none;">
+              <label for="textAnswer">解答をテキストで入力:</label>
+              <textarea id="textAnswer" rows="8" placeholder="ここに解答を入力" oninput="enableSubmitButton()"></textarea>
+            </div>
+            <button id="submit-button" onclick="submitAnswer()" class="submit" disabled style="margin-top: 20px;">この内容で提出する</button>
+            <p id="studentMessage"></p>
+          </div>
+        </div>
+        <div id="history-card" class="admin-card" style="display: none;">
+            <h3>提出履歴</h3>
+            <div id="submission-history" class="table-container">
+                <p>授業を選択すると、その授業の提出履歴が表示されます。</p>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+      &copy; 2024 EduSupport. All rights reserved.
+  </footer>
+  <div id="feedback-modal" class="modal-overlay">
+      <div class="modal-content large">
+        <div class="modal-header"><h3>採点結果フィードバック</h3></div>
+        <div id="feedback-modal-body" class="modal-body"></div>
+        <div class="modal-footer"><button onclick="closeFeedbackModal()" class="cancel-button">閉じる</button></div>
+      </div>
+    </div>
+    <div id="loading-overlay" class="overlay">
+      <div>
+        <div class="loader"></div>
+        <div class="loading-message">処理中です...</div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
+    <script src="firebase-init.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/student.js"></script>
+    </body>
+</html>
