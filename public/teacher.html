@@ -28,6 +28,19 @@
           <span id="displayedPassword"></span>
           <button class="change-password-button" onclick="openChangePasswordModal()">パスワードを変更する</button>
         </h3>
+        
+        <h3>課題の絞り込み</h3>
+        <div class="filters">
+          <label for="year-select">年度:</label>
+          <select id="year-select" onchange="loadClassesForYear(this.value)"></select>
+
+          <label for="class-select">クラス:</label>
+          <select id="class-select" onchange="loadSubjectsForClass(this.value)"></select>
+
+          <label for="subject-select">授業:</label>
+          <select id="subject-select" onchange="loadPromptsForSubject(this.value)"></select>
+        </div>
+
         <h3>課題・採点基準の編集</h3>
         <div class="table-container">
           <table id="promptTable"></table>
@@ -42,16 +55,50 @@
           <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
           <label for="newPromptText">採点基準：</label>
           <textarea id="newPromptText" style="height: 300px; width: 100%;"></textarea>
+          
+          <label for="deadline">締め切り日：</label>
+          <input type="datetime-local" id="deadline">
+          
           <label for="newPromptVisibility">生徒用ページでの表示：</label>
           <select id="newPromptVisibility">
             <option value="表示" selected>表示</option>
             <option value="非表示">非表示</option>
           </select>
+          <button id="checkPromptButton" onclick="checkPrompt()" class="result" style="margin-right: 10px;">矛盾をチェック</button>
           <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
+
+        </div>
+        
+        <div id="promptCheckResult" class="result-box" style="display: none;"></div>
         </div>
       </div>
     </div>
   </div>
+
+  <div id="duplicate-modal" class="modal-container" style="display: none;">
+    <div class="modal-content">
+      <span class="modal-close-button" onclick="closeDuplicateModal()">&times;</span>
+      <h2>課題の複製</h2>
+      <p>
+        「<strong id="duplicate-prompt-title"></strong>」をどこに複製しますか？
+      </p>
+      <div class="filters">
+        <label for="duplicate-year-select">年度:</label>
+        <select id="duplicate-year-select"></select>
+
+        <label for="duplicate-class-select">クラス:</label>
+        <select id="duplicate-class-select"></select>
+
+        <label for="duplicate-subject-select">授業:</label>
+        <select id="duplicate-subject-select"></select>
+      </div>
+      <div class="modal-actions">
+        <button id="execute-duplicate-button" class="edit">この授業に複製する</button>
+        <button onclick="closeDuplicateModal()" class="cancel-button">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
   <footer>
     &copy; 2024 EduSupport. All rights reserved.
   </footer>
@@ -64,7 +111,7 @@
     <script src="firebase-init.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
-    <script src="js/teacher.js"></script>
     <script src="js/prompttable.js"></script>
+    <script src="js/teacher.js"></script>
     </body>
 </html>

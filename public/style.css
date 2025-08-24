@@ -877,3 +877,96 @@ button {
   max-height: 400px; /* 高さを制限してスクロール可能に */
   overflow-y: auto;
 }
+
+/* =================================== */
+/* モーダルウィンドウ用のスタイル       */
+/* =================================== */
+
+.modal-container {
+  display: none; /* 初期状態では非表示 */
+  position: fixed; /* 画面に固定 */
+  z-index: 1000; /* 他の要素より手前に表示 */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* 内容が多い場合にスクロール */
+  background-color: rgba(0,0,0,0.5); /* 半透明の黒い背景 */
+
+  /* Flexboxを使って内容を中央揃えにする */
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px 30px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px; /* 横幅の最大値を設定 */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.modal-close-button {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+}
+
+.modal-close-button:hover,
+.modal-close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+}
+
+.modal-actions {
+  text-align: right;
+  margin-top: 20px;
+}
+
+/* =================================== */
+/* 採点基準チェック結果表示用のスタイル */
+/* =================================== */
+
+.result-box {
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  white-space: pre-wrap; /* 改行やスペースをそのまま表示 */
+  line-height: 1.6;
+}
+
+/* 状態別のスタイル */
+.result-box.loading {
+  background-color: #e9e9e9;
+  border-color: #ccc;
+  color: #333;
+}
+.result-box.success {
+  background-color: #e6ffed;
+  border-color: #b7e1cd;
+  color: #2b6447;
+}
+.result-box.warning {
+  background-color: #fffbe6;
+  border-color: #ffe58f;
+  color: #8a6d3b;
+}
+.result-box.error {
+  background-color: #fff1f0;
+  border-color: #ffccc7;
+  color: #a8071a;
+}

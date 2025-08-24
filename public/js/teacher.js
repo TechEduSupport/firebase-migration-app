@@ -1,121 +1,184 @@
-/**
- * 先生関連の処理
- * Firebase SDKを使用し、Apps Scriptへの依存を無くす
- */
-
-// ------------------------------
-// 利用回数情報を取得して表示
-// ------------------------------
-async function updateUsageCount(teacherId) {
-  try {
-    const doc = await db.collection('users').doc(teacherId).get();
-    if (doc.exists) {
-      const data = doc.data();
-      const usageLimitText = data.usageLimit ? data.usageLimit + '回' : '無制限';
-      document.getElementById('usageCountDisplay').textContent =
-        `現在の利用回数: ${data.usageCount || 0}／${usageLimitText}`;
-    }
-  } catch (error) {
-    console.error('利用回数の取得に失敗しました:', error);
-  }
-}
-
-// ------------------------------
-// パスワード変更モーダルの制御
-// ------------------------------
-function openChangePasswordModal() {
-  document.getElementById('changePasswordModal').style.display = 'flex';
-}
-
-function closeChangePasswordModal() {
-  document.getElementById('changePasswordModal').style.display = 'none';
-  document.getElementById('newPassword').value = '';
-  document.getElementById('confirmPassword').value = '';
-}
-
-// ------------------------------
-// Firebase Authでパスワード変更
-// ------------------------------
-function submitNewPassword() {
-  const newPassword = document.getElementById('newPassword').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
-
-  if (!newPassword || !confirmPassword) {
-    displayNotification('パスワードを入力してください。');
-    return;
-  }
-  if (newPassword !== confirmPassword) {
-    displayNotification('確認用パスワードが一致しません。');
-    return;
-  }
-  if (newPassword.length < 8) {
-    displayNotification('パスワードは8文字以上で設定してください。');
-    return;
-  }
-
-  auth.currentUser
-    .updatePassword(newPassword)
-    .then(() => {
-      closeChangePasswordModal();
-      document.getElementById('displayedPassword').innerText = '*'.repeat(newPassword.length);
-      displayNotification('パスワードが変更されました。');
-    })
-    .catch((error) => {
-      console.error('パスワード変更エラー:', error);
-      displayNotification('パスワードの変更に失敗しました。');
-    });
-}
-
-// ------------------------------
-// 先生の課題をFirestoreから取得
-// ------------------------------
-async function fetchTeacherPrompts(teacherUid) {
-  try {
-    console.log(`Firestoreから先生 (UID: ${teacherUid}) の課題を取得します...`);
-
-    const querySnapshot = await db
-      .collection('prompts')
-      .where('teacherId', '==', teacherUid)
-      .orderBy('createdAt', 'desc')
-      .get();
-
-    const prompts = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      prompts.push({
-        id: doc.id,
-        note: data.title,
-        visibility: data.isVisible ? '表示' : '非表示',
-        question: data.question,
-        text: data.subject,
-        questionImageUrl: data.questionImageUrl || '', // ★ この行を追加
-      });
-    });
-
-    populatePromptTable(prompts);
-  } catch (error) {
-    console.error('課題の取得中にエラーが発生しました:', error);
-    alert('課題一覧の読み込みに失敗しました。');
-    populatePromptTable([]);
-  }
-}
+// public/js/teacher.js
 
 /**
- * ページ読み込み完了時のエントリーポイント
+ * ページの読み込みが完了した際の初期化処理
  */
 document.addEventListener('DOMContentLoaded', () => {
-  auth.onAuthStateChanged(user => {
+  const promptTable = document.getElementById('promptTable');
+  if (promptTable) {
+    promptTable.innerHTML = `<tr><td colspan="7" style="text-align: center;">年度・クラス・授業を選択してください。</td></tr>`;
+  }
+
+  firebase.auth().onAuthStateChanged(user => {
     if (user) {
-      // ログインしているユーザーがいれば、ページの初期化処理を開始
-      globalTeacherId = user.uid;
-      fetchTeacherPrompts(user.uid);
-      document.getElementById('teacherName').innerText = `ようこそ、${user.displayName || user.email}さん`;
-      document.getElementById('displayedLoginId').innerText = user.email;
-      // TODO: パスワード変更モーダルや一括採点ページの表示ロジックをここに追加
-    } else {
-      // ログインしていなければ、トップページに強制的に戻す
-      console.log("No user signed in on teacher page. Redirecting...");
-      window.location.href = 'index.html';
+      window.currentTeacherId = user.uid;
+      initializeFilterDropdowns();
     }
   });
 });
+
+/**
+ * 絞り込み用ドロップダウンの初期設定を行う
+ */
+async function initializeFilterDropdowns() {
+  const yearSelect = document.getElementById('year-select');
+  if (!yearSelect) return;
+
+  setupYearSelect(yearSelect);
+  await loadClassesForYear(yearSelect.value);
+}
+
+/**
+ * 年度選択ドロップダウンに、現在の年度から過去5年分の選択肢を生成する
+ */
+function setupYearSelect(yearSelect) {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  const academicYear = (currentMonth < 4) ? currentYear - 1 : currentYear;
+  
+  yearSelect.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const year = academicYear - i;
+    const option = document.createElement('option');
+    option.value = year;
+    option.textContent = `${year}年度`;
+    if (year === academicYear) option.selected = true;
+    yearSelect.appendChild(option);
+  }
+}
+
+/**
+ * 選択された年度に基づいて、担当クラス一覧を読み込む
+ */
+async function loadClassesForYear(year) {
+  const classSelect = document.getElementById('class-select');
+  const subjectSelect = document.getElementById('subject-select');
+  
+  classSelect.innerHTML = '<option value="">クラスを選択</option>';
+  subjectSelect.innerHTML = '<option value="">授業を選択</option>';
+  
+  if (window.loadPromptTable) window.loadPromptTable(); 
+
+  if (!year || !window.currentTeacherId) return;
+
+  const db = firebase.firestore();
+  try {
+    const subjectsQuery = await db.collection('subjects')
+      .where('year', '==', parseInt(year))
+      .where('teacherIds', 'array-contains', window.currentTeacherId)
+      .get();
+      
+    if (subjectsQuery.empty) return;
+
+    const classIds = [...new Set(subjectsQuery.docs.map(doc => doc.data().classId))];
+    const classPromises = classIds.map(id => db.collection('classes').doc(id).get());
+    const classSnapshots = await Promise.all(classPromises);
+
+    classSnapshots.forEach(doc => {
+      if (doc.exists) {
+        const classData = doc.data();
+        const option = document.createElement('option');
+        option.value = doc.id;
+        option.textContent = classData.name;
+        classSelect.appendChild(option);
+      }
+    });
+  } catch (error) {
+    console.error("クラスの読み込みに失敗しました:", error);
+  }
+}
+
+/**
+ * 選択されたクラスに基づいて、担当授業一覧を読み込む
+ */
+async function loadSubjectsForClass(classId) {
+  const subjectSelect = document.getElementById('subject-select');
+  subjectSelect.innerHTML = '<option value="">授業を選択</option>';
+  
+  if (window.loadPromptTable) window.loadPromptTable();
+
+  if (!classId || !window.currentTeacherId) return;
+
+  const db = firebase.firestore();
+  try {
+    const subjectsQuery = await db.collection('subjects')
+      .where('classId', '==', classId)
+      .where('teacherIds', 'array-contains', window.currentTeacherId)
+      .get();
+      
+    subjectsQuery.forEach(doc => {
+      const subjectData = doc.data();
+      const option = document.createElement('option');
+      option.value = doc.id;
+      option.textContent = subjectData.name;
+      subjectSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error("授業の読み込みに失敗しました:", error);
+  }
+}
+
+/**
+ * 選択された授業に基づいて、課題一覧を読み込む
+ */
+function loadPromptsForSubject(subjectId) {
+  if (window.loadPromptTable) {
+    window.loadPromptTable({ subjectId: subjectId });
+  } else {
+    console.error('loadPromptTable関数が見つかりません。prompttable.jsが正しく読み込まれているか確認してください。');
+  }
+}
+
+/**
+ * 採点基準の矛盾・曖昧さチェックを実行する
+ */
+async function checkPrompt() {
+  const checkButton = document.getElementById('checkPromptButton');
+  const resultBox = document.getElementById('promptCheckResult');
+
+  const promptText = document.getElementById('newPromptText').value;
+  const promptNote = document.getElementById('newPromptNote').value;
+  const promptVisibility = document.getElementById('newPromptVisibility').value === '表示';
+
+  if (!promptText.trim()) {
+    alert('採点基準内容を入力してください。');
+    return;
+  }
+
+  checkButton.disabled = true;
+  checkButton.innerText = '判定中...';
+  resultBox.style.display = 'block';
+  resultBox.className = 'result-box loading';
+  resultBox.innerText = 'AIが採点基準をチェックしています...';
+
+  try {
+    // ▼▼▼ ここを修正 ▼▼▼
+    // 'asia-northeast1'リージョンを明示的に指定してFunctionsインスタンスを取得
+    const functions = firebase.app().functions('asia-northeast1');
+    const checkPromptConsistency = functions.httpsCallable('checkPromptConsistency');
+    // ▲▲▲ 修正ここまで ▲▲▲
+    
+    const response = await checkPromptConsistency({
+      promptText,
+      promptNote,
+      promptVisibility
+    });
+
+    const resultText = response.data.result;
+    resultBox.innerText = resultText;
+    
+    if (resultText.includes('問題は見つかりませんでした')) {
+      resultBox.className = 'result-box success';
+    } else {
+      resultBox.className = 'result-box warning';
+    }
+
+  } catch (error) {
+    console.error('採点基準のチェックに失敗しました:', error);
+    resultBox.className = 'result-box error';
+    resultBox.innerText = 'エラーが発生しました。コンソールログを確認してください。\n' + error.message;
+  } finally {
+    checkButton.disabled = false;
+    checkButton.innerText = '矛盾をチェック';
+  }
+}
