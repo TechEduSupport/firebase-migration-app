@@ -89,10 +89,10 @@ async function handleSubjectSelection() {
 
     await loadPromptsForSubject(subjectId);
     await loadSubmissionsForSubject(subjectId);
-    
+
     populatePromptSelect();
     populateSubmissionHistory();
-    
+
     promptSelect.disabled = false;
     historyCard.style.display = 'block';
 }
@@ -141,7 +141,7 @@ async function loadSubmissionsForSubject(subjectId) {
 function populatePromptSelect() {
     const sel = document.getElementById('prompt-select');
     sel.innerHTML = '<option value="">▼ 課題を選択してください</option>';
-    if(promptsCache.length === 0) {
+    if (promptsCache.length === 0) {
         sel.innerHTML = '<option value="">提出できる課題がありません</option>';
         return;
     }
@@ -157,7 +157,7 @@ function populatePromptSelect() {
 /**
  * 課題が選択されたときの処理
  */
-function handlePromptSelection() {
+async function handlePromptSelection() {
     const promptId = document.getElementById('prompt-select').value;
     const submissionCard = document.getElementById('submission-card');
     resetSubmissionArea();
@@ -175,14 +175,27 @@ function handlePromptSelection() {
     const pdfContainer = document.getElementById('pdf-container');
     const problemPdf = document.getElementById('problem-pdf');
 
-    if (prompt.questionImageUrl) {
-        if (prompt.questionImageUrl.toLowerCase().includes('.pdf')) {
-            problemPdf.src = prompt.questionImageUrl;
-            pdfContainer.style.display = 'block';
+    if (prompt.questionImageUrl && typeof prompt.questionImageUrl === 'string') {
+        try {
+            let url;
+            if (prompt.questionImageUrl.startsWith('https://') || prompt.questionImageUrl.startsWith('gs://')) {
+                url = await storage.refFromURL(prompt.questionImageUrl).getDownloadURL();
+            } else {
+                url = await storage.ref(prompt.questionImageUrl).getDownloadURL();
+            }
+
+            if (url.toLowerCase().includes('.pdf')) {
+                problemPdf.src = url;
+                pdfContainer.style.display = 'block';
+                problemImage.style.display = 'none';
+            } else {
+                problemImage.src = url;
+                problemImage.style.display = 'block';
+                pdfContainer.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("画像URLの取得に失敗しました:", error);
             problemImage.style.display = 'none';
-        } else {
-            problemImage.src = prompt.questionImageUrl;
-            problemImage.style.display = 'block';
             pdfContainer.style.display = 'none';
         }
     } else {
@@ -194,6 +207,7 @@ function handlePromptSelection() {
     const isSubmitted = submissionsCache.some(s => s.promptId === promptId);
     document.getElementById('submit-button').textContent = isSubmitted ? 'この内容で再提出する' : 'この内容で提出する';
 }
+
 
 /**
  * 提出履歴テーブルを描画する
@@ -274,7 +288,7 @@ async function submitAnswer() {
             const uploadTask = await storageRef.put(selectedFile);
             answerImageUrl = await uploadTask.ref.getDownloadURL();
         }
-        
+
         const textAnswer = (answerMode === 'text') ? document.getElementById('textAnswer').value.trim() : '';
         const existingSubmission = submissionsCache.find(s => s.promptId === promptId);
 
@@ -337,19 +351,19 @@ function showMessage(msg) {
 }
 
 function escapeHtml(str) {
-  if (typeof str !== 'string') return '';
-  return str.replace(/[&<>"']/g, (match) => ({'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#39;'}[match]));
+    if (typeof str !== 'string') return '';
+    return str.replace(/[&<>"']/g, (match) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match]));
 }
 
 /**
  * ページ読み込み完了時のエントリーポイント
  */
 document.addEventListener('DOMContentLoaded', () => {
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      initializeStudentPage(user);
-    } else {
-      window.location.href = 'index.html';
-    }
-  });
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            initializeStudentPage(user);
+        } else {
+            window.location.href = 'index.html';
+        }
+    });
 });
