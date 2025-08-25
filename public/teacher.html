@@ -10,115 +10,96 @@
 <body>
   <header>
     <h1>手書き採点アシスタント</h1>
-    <div id="usageCountDisplay" style="text-align: center; font-size: 16px; font-weight: bold;"></div>
+    <div class="header-actions">
+      <div id="usageCountDisplay"></div>
+      <button class="icon-button" onclick="openChangePasswordModal()" title="設定">
+        <i class="fas fa-cog"></i>
+      </button>
+      <button class="logout-top" onclick="logout()">ログアウト</button>
+    </div>
   </header>
 
   <div class="container">
-    <div id="teacher-page">
-      <div class="logout-container" style="display: block;">
-        <button class="logout-top" onclick="logout()">ログアウト</button>
+    <div class="announcement-box">
+      <h2>お知らせ</h2>
+      <p id="announcement-text"></p>
+    </div>
+    
+    <h3 id="teacherName"></h3>
+    <button class="bulk-grading">一括採点モードへ</button>
+
+    <h3>課題の絞り込み</h3> 
+    <div class="filter-panes">
+      <div class="pane">
+        <div class="pane-header">年度</div>
+        <ul id="year-pane" class="pane-list"></ul>
       </div>
-      <div id="teacher-page-content">
-        <div class="announcement-box">
-          <h2>お知らせ</h2>
-          <p id="announcement-text"></p>
-        </div>
-        <h3 id="teacherName"></h3>
-        <button class="bulk-grading">一括採点モードへ</button>
-        <h3>ログインID: <span id="displayedLoginId"></span></h3>
-        <h3>パスワード:
-          <span id="displayedPassword"></span>
-          <button class="change-password-button" onclick="openChangePasswordModal()">パスワードを変更する</button>
-        </h3>
+      <div class="pane">
+        <div class="pane-header">クラス</div>
+        <ul id="class-pane" class="pane-list">
+          <li>年度を選択してください</li>
+        </ul>
+      </div>
+      <div class="pane">
+        <div class="pane-header">授業</div>
+        <ul id="subject-pane" class="pane-list">
+          <li>クラスを選択してください</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="tab-navigation">
+      <button class="tab-button active" onclick="showTab('tab-list')">課題一覧</button>
+      <button class="tab-button" onclick="showTab('tab-create')">新規作成</button>
+    </div>
+    
+    <div id="tab-list" class="tab-content active">
+      <h3>課題・採点基準の編集</h3>
+      <div class="table-container">
+        <table id="promptTable">
+          </table>
+      </div>
+    </div>
+
+    <div id="tab-create" class="tab-content">
+      <div class="add-prompt-section">
+        <h3>新しい採点基準の作成</h3>
+        <p>※採点基準を追加する授業を、上の絞り込みメニューから選択してください。</p>
+        <label for="newPromptNote">タイトル：</label>
+        <textarea id="newPromptNote" style="height: 100px; width: 100%;"></textarea>
+
+        <label for="newQuestion">問題文：</label>
+        <textarea id="newQuestion" style="height: 200px; width: 100%;"></textarea>
+
+        <label for="newFileForPrompt">問題の画像またはPDFファイル（任意）：</label>
+        <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
         
-        <h3>課題の絞り込み</h3>
-        <div class="filters">
-          <label for="year-select">年度:</label>
-          <select id="year-select" onchange="loadClassesForYear(this.value)"></select>
-
-          <label for="class-select">クラス:</label>
-          <select id="class-select" onchange="loadSubjectsForClass(this.value)"></select>
-
-          <label for="subject-select">授業:</label>
-          <select id="subject-select" onchange="loadPromptsForSubject(this.value)"></select>
+        <label for="newPromptText">採点基準：</label>
+        <div class="textarea-container">
+          <textarea id="newPromptText" rows="10" placeholder="採点基準を入力してください..."></textarea>
+          <button id="checkPromptButton" class="check-prompt-icon-btn" title="矛盾・曖昧さをチェック" onclick="checkPrompt()">
+            <i class="fas fa-search"></i>
+            <span>チェック</span>
+          </button>
         </div>
-
-        <div class="tab-navigation">
-          <button class="tab-button active" onclick="showTab('tab-list')">課題一覧</button>
-          <button class="tab-button" onclick="showTab('tab-create')">新規作成</button>
-        </div>
-        <div id="tab-list" class="tab-content active">
-          <h3>課題・採点基準の編集</h3>
-          <div class="table-container">
-            <table id="promptTable"></table>
-          </div>
-        </div>
-        <div id="tab-create" class="tab-content">
-          <div class="add-prompt-section">
-            <h3>新しい採点基準の作成</h3>
-            <label for="newPromptNote">タイトル：</label>
-            <textarea id="newPromptNote" style="height: 100px; width: 100%;"></textarea>
-  
-            <label for="newQuestion">問題文：</label>
-            <textarea id="newQuestion" style="height: 200px; width: 100%;"></textarea>
-  
-            <label for="newFileForPrompt">問題の画像またはPDFファイル（任意）：</label>
-            <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
-            
-            <label for="newPromptText">採点基準：</label>
-            <div class="textarea-container">
-              <textarea id="newPromptText" rows="10" placeholder="採点基準を入力してください..."></textarea>
-              <button id="checkPromptButton" class="check-prompt-icon-btn" title="矛盾・曖昧さをチェック" onclick="checkPrompt()">
-                <i class="fas fa-search"></i>
-                <span>チェック</span>
-              </button>
-            </div>
-            
-            <div id="checkResultBanner" class="check-result-banner"></div>
-            
-            <label for="deadline">締め切り日：</label>
-            <input type="datetime-local" id="deadline">
-            
-            <label for="newPromptVisibility">生徒用ページでの表示：</label>
-            <select id="newPromptVisibility">
-              <option value="表示" selected>表示</option>
-              <option value="非表示">非表示</option>
-            </select>
-            <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
-          </div>
-        </div>
-        </div>
-    </div>
-  </div>
-
-  <div id="duplicate-modal" class="modal-container" style="display: none;">
-    <div class="modal-content">
-      <span class="modal-close-button" onclick="closeDuplicateModal()">&times;</span>
-      <h2>課題の複製</h2>
-      <p>「<strong id="duplicate-prompt-title"></strong>」をどこに複製しますか？</p>
-      <div class="filters">
-        <label for="duplicate-year-select">年度:</label>
-        <select id="duplicate-year-select"></select>
-        <label for="duplicate-class-select">クラス:</label>
-        <select id="duplicate-class-select"></select>
-        <label for="duplicate-subject-select">授業:</label>
-        <select id="duplicate-subject-select"></select>
-      </div>
-      <div class="modal-actions">
-        <button id="execute-duplicate-button" class="edit">この授業に複製する</button>
-        <button onclick="closeDuplicateModal()" class="cancel-button">キャンセル</button>
+        
+        <div id="checkResultBanner" class="check-result-banner"></div>
+        
+        <label for="deadline">締め切り日：</label>
+        <input type="datetime-local" id="deadline">
+        
+        <label for="newPromptVisibility">生徒用ページでの表示：</label>
+        <select id="newPromptVisibility">
+          <option value="表示" selected>表示</option>
+          <option value="非表示">非表示</option>
+        </select>
+        <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
       </div>
     </div>
-  </div>
-  
-  <div id="contradictionModal" class="modal-container">
-    <div class="modal-content">
-      <span class="modal-close-button">&times;</span>
-      <h2>採点基準のチェック結果</h2>
-      <div id="modalBody" class="result-box"></div>
-      <div class="modal-actions"></div>
     </div>
-  </div>
+
+  <div id="duplicate-modal" class="modal-container" style="display: none;">...</div>
+  <div id="contradictionModal" class="modal-container">...</div>
 
   <footer>
     &copy; 2024 EduSupport. All rights reserved.

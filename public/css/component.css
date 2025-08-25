@@ -1,0 +1,246 @@
+/* public/css/components.css */
+
+/* ラベル */
+label {
+  font-size: 16px;
+  color: #555;
+  display: block;
+  margin-top: 10px;
+}
+
+/* 入力フィールド */
+input[type="text"], input[type="password"], textarea, select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* ボタン */
+button {
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
+  vertical-align: middle;
+}
+button:hover {
+  opacity: 0.9;
+}
+button:disabled {
+  background-color: #d3d3d3;
+  cursor: not-allowed;
+}
+
+/* ボタンのカラー */
+.submit { background-color: #4A90E2; }
+.grading-button, .login-button, .bulk-grading, .export-excel, .grading-support-button { background-color: #4A90E2; }
+.reset-all { background-color: #dc3545; color: white; padding: 10px 15px; font-size: 14px; }
+.cancel-button { background-color: #17a2b8; color: white; padding: 10px 15px; font-size: 14px; }
+.logout { background-color: #6c757d; color: white; padding: 10px 15px; font-size: 14px; }
+.logout:hover { background-color: #5a6268; }
+.edit, .change-login-id-button, .change-password-button { background-color: #5cb85c; }
+.delete { background-color: #d9534f; }
+.result { background-color: #5bc0de; color: #fff; }
+
+/* テーブルスタイル */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  word-wrap: break-word;
+  font-size: 14px;
+}
+th {
+  background-color: #f9f9f9;
+  color: #333;
+}
+tr:nth-child(even) { background-color: #fefefe; }
+tr:hover { background-color: #f1f1f1; }
+.table-container {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+/* メッセージスタイル */
+#message, #studentLoginMessage, #teacherLoginMessage {
+  color: red;
+  text-align: center;
+}
+#studentMessage {
+  display: none;
+}
+
+/* 結果メッセージ用のボックス */
+.result-box {
+  background-color: #eef;
+  border: 1px solid #ccd;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 20px;
+  font-size: 1em;
+  color: #333;
+  word-wrap: break-word;
+}
+.result-box.loading { background-color: #e9e9e9; border-color: #ccc; color: #333; }
+.result-box.success { background-color: #e6ffed; border-color: #b7e1cd; color: #2b6447; }
+.result-box.warning { background-color: #fffbe6; border-color: #ffe58f; color: #8a6d3b; }
+.result-box.error { background-color: #fff1f0; border-color: #ffccc7; color: #a8071a; }
+
+/* ログアウトボタン */
+.logout-container {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 1001;
+  display: none;
+}
+.logout-top {
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 14px;
+}
+.logout-top:hover {
+  background-color: #5a6268;
+}
+
+/* ローディングオーバーレイ */
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+.loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #4A90E2;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loading-message {
+  color: #fff;
+  font-size: 1.2em;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* モーダル */
+.modal-overlay, .modal-container {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+}
+.modal-container { display: none; }
+.modal-container.is-open, .modal-container:not(.is-open) {
+    display: none; /* 初期状態では両方非表示、JSでflexにする */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px 30px;
+  border: 1px solid #888;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  position: relative;
+}
+.modal-content.large {
+  max-width: 800px;
+}
+
+.modal-header {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0 0 15px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #4A90E2;
+  text-align: center;
+}
+.modal-header h3 {
+  margin: 0;
+  font-size: 1em;
+}
+
+.modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.modal-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.modal-footer button, .modal-actions button {
+  width: auto;
+  padding: 10px 20px;
+}
+
+.modal-close-button {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+}
+.modal-close-button:hover, .modal-close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+.modal-actions {
+  text-align: right;
+  margin-top: 20px;
+}
+
+/* ボタン内ローディングスピナー */
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  vertical-align: middle;
+  margin-left: 8px;
+}

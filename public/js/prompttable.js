@@ -1,3 +1,9 @@
+// public/js/prompttable.js
+
+/**
+ * onSnapshotリスナーを管理するためのグローバル変数
+ */
+let unsubscribeFromPrompts = null;
 /**
  * グローバル変数として、現在選択されている授業IDを保持
  */
@@ -11,74 +17,98 @@ function escapeHtml(str) {
     return str;
   }
   return str.replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
 }
 
-
-// ------------------------------
-// Firestoreから課題を読み込み、テーブルを描画する
-// ------------------------------
-async function loadPromptTable(filters = {}) {
+/**
+ * 課題一覧テーブルをリアルタイムで読み込む唯一の関数
+ * @param {object} options - { subjectId: '...' }
+ */
+window.loadPromptTable = function(options = {}) {
   const table = document.getElementById('promptTable');
-  const db = firebase.firestore();
-  
-  currentSubjectId = filters.subjectId || null;
+  currentSubjectId = options.subjectId || null;
 
+  // 以前のリスナーが設定されていれば、それを解除する
+  if (unsubscribeFromPrompts) {
+    unsubscribeFromPrompts();
+    unsubscribeFromPrompts = null;
+  }
+
+  if (!table) return;
+
+  // 授業が選択されていない場合は、メッセージを表示して処理を終了
   if (!currentSubjectId) {
-    table.innerHTML = `<tr><td colspan="7" style="text-align: center;">授業を選択してください。</td></tr>`;
+    table.innerHTML = `
+      <thead>
+        <tr><th></th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: center;">上のメニューから授業を選択してください。</td></tr>
+      </tbody>`;
     return;
   }
   
-  table.innerHTML = `<tr><td colspan="7" style="text-align: center;">読み込み中...</td></tr>`;
-  
-  try {
-    const querySnapshot = await db.collection('prompts')
-                                  .where('subjectId', '==', currentSubjectId)
-                                  .orderBy('createdAt', 'desc')
-                                  .get();
+  // テーブルのヘッダーと読み込み中メッセージを先に表示
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th style="width: 8%;">画像/PDF</th>
+        <th style="width: 15%;">タイトル</th>
+        <th style="width: 10%;">表示状態</th>
+        <th style="width: 15%;">締め切り</th>
+        <th style="width: 20%;">問題文</th>
+        <th style="width: 22%;">採点基準</th>
+        <th style="width: 10%;">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="7" style="text-align: center;">読み込み中...</td></tr>
+    </tbody>`;
 
-    if (querySnapshot.empty) {
-        table.innerHTML = `<tr><td colspan="7" style="text-align: center;">この授業の課題はまだ作成されていません。</td></tr>`;
-        return;
-    }
+  const db = firebase.firestore();
+  const query = db.collection('prompts')
+                  .where('subjectId', '==', currentSubjectId)
+                  .orderBy('createdAt', 'desc');
 
+  // ★★★ リアルタイムリスナーを設定 ★★★
+  unsubscribeFromPrompts = query.onSnapshot((querySnapshot) => {
     const prompts = [];
     querySnapshot.forEach((doc) => {
       prompts.push({ id: doc.id, ...doc.data() });
     });
-
-    populatePromptTable(prompts);
-
-  } catch (error) {
-    console.error("課題の読み込みに失敗しました:", error);
-    table.innerHTML = `<tr><td colspan="7" style="text-align: center;">課題の読み込みに失敗しました。</td></tr>`;
-  }
-}
-
+    populatePromptTable(prompts); // テーブル描画関数を呼び出す
+  }, (error) => {
+    console.error("課題のリアルタイム読み込みに失敗しました:", error);
+    if (table.querySelector('tbody')) {
+      table.querySelector('tbody').innerHTML = `<tr><td colspan="7" style="text-align: center;">エラーが発生しました。</td></tr>`;
+    }
+  });
+};
 
 // ------------------------------
-// テーブル描画
+// テーブル描画 ★★★ 最重要修正点 ★★★
 // ------------------------------
 function populatePromptTable(prompts) {
   const table = document.getElementById('promptTable');
-  table.innerHTML = `
-    <tr>
-      <th style="width: 8%;">画像/PDF</th>
-      <th style="width: 15%;">タイトル</th>
-      <th style="width: 10%;">表示状態</th>
-      <th style="width: 15%;">締め切り</th>
-      <th style="width: 20%;">問題文</th>
-      <th style="width: 22%;">採点基準</th>
-      <th style="width: 10%;">操作</th>
-    </tr>`;
+  const tbody = table.querySelector('tbody'); // 必ずtbody要素を取得する
+
+  if (!tbody) return; // エラー防止
+
+  tbody.innerHTML = ''; // tbodyの中身だけをクリアする
+
+  if (prompts.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">この授業の課題はまだ作成されていません。</td></tr>`;
+    return;
+  }
 
   prompts.forEach(function (prompt) {
-    const row = table.insertRow();
+    const row = tbody.insertRow(); // tbodyに新しい行を追加する
     row.id = 'promptRow' + prompt.id;
 
+    // (これ以降のセル生成ロジックは変更なし)
     const fileCell = row.insertCell(0);
     const titleCell = row.insertCell(1);
     const visibilityCell = row.insertCell(2);
@@ -95,52 +125,43 @@ function populatePromptTable(prompts) {
         fileCell.innerText = 'なし';
     }
     fileCell.style.textAlign = 'center';
-    
     titleCell.innerText = prompt.title || '(タイトルなし)';
     visibilityCell.innerText = prompt.isVisible ? '表示' : '非表示';
-    
     if (prompt.deadline && prompt.deadline.toDate) {
       deadlineCell.innerText = prompt.deadline.toDate().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
     } else {
       deadlineCell.innerText = '未設定';
     }
-
     createTruncatedTextCell(questionCell, prompt.question);
-    createTruncatedTextCell(criteriaCell, prompt.criteria); // ★修正済み
-
+    createTruncatedTextCell(criteriaCell, prompt.criteria);
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'action-cell-buttons';
-
     const editButton = document.createElement('button');
     editButton.innerText = '編集';
     editButton.classList.add('edit');
     editButton.onclick = () => editPrompt(prompt, row);
-
     const deleteButton = document.createElement('button');
     deleteButton.innerText = '削除';
     deleteButton.classList.add('delete');
     deleteButton.onclick = () => deletePrompt(prompt.id);
-    
     const duplicateButton = document.createElement('button');
     duplicateButton.innerText = '複製';
     duplicateButton.classList.add('result');
     duplicateButton.onclick = () => openDuplicateModal(prompt);
-
     const resultButton = document.createElement('button');
     resultButton.innerText = '結果';
     resultButton.classList.add('result');
     resultButton.onclick = () => showResults(resultButton, prompt.id);
-
     buttonContainer.append(editButton, deleteButton, duplicateButton, resultButton);
     actionCell.appendChild(buttonContainer);
   });
 }
-
-// ------------------------------
-// 編集モードへの切り替え
+// ------------
+// ------------------
+// 編集モードへの切り替え (変更なし)
 // ------------------------------
 function editPrompt(prompt, row) {
-  const { id, criteria, title, isVisible, question, questionImageUrl, deadline } = prompt; // ★修正済み
+  const { id, criteria, title, isVisible, question, questionImageUrl, deadline } = prompt;
   
   const deadlineValue = deadline && deadline.toDate ? new Date(deadline.toDate().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : '';
 
@@ -153,27 +174,23 @@ function editPrompt(prompt, row) {
     <div class="edit-form-grid">
         <label>タイトル:</label>
         <textarea id="editTitle${id}" class="edit-form-textarea">${escapeHtml(title || '')}</textarea>
-
         <label>表示状態:</label>
         <select id="editIsVisible${id}">
             <option value="true" ${isVisible ? 'selected' : ''}>表示</option>
             <option value="false" ${!isVisible ? 'selected' : ''}>非表示</option>
         </select>
-        
         <label>締め切り:</label>
         <input type="datetime-local" id="editDeadline${id}" value="${deadlineValue}">
-
         <label>問題文:</label>
         <textarea id="editQuestion${id}" class="edit-form-textarea question">${escapeHtml(question || '')}</textarea>
-
         <label>採点基準:</label>
-        <textarea id="editCriteria${id}" class="edit-form-textarea criteria">${escapeHtml(criteria || '')}</textarea> <label>画像/PDF:</label>
+        <textarea id="editCriteria${id}" class="edit-form-textarea criteria">${escapeHtml(criteria || '')}</textarea>
+        <label>画像/PDF:</label>
         <div>
            <div class="current-file">現在のファイル: ${questionImageUrl ? `<a href="${questionImageUrl}" target="_blank">表示</a>` : 'なし'}</div>
            <input type="file" id="editFileForPrompt${id}" accept="image/*,application/pdf" style="margin-top: 5px; width: 100%;">
            <div class="file-help-text">ファイルを変更する場合のみ選択してください。</div>
         </div>
-
         <label>操作:</label>
         <div id="edit-buttons-${id}" class="action-cell-buttons"></div>
     </div>
@@ -195,7 +212,7 @@ function editPrompt(prompt, row) {
 
 
 // ------------------------------
-// Firestoreへプロンプトを保存（更新）
+// Firestoreへプロンプトを保存（更新）(変更なし)
 // ------------------------------
 async function savePrompt(originalPrompt) {
   const { id } = originalPrompt;
@@ -207,7 +224,7 @@ async function savePrompt(originalPrompt) {
   const newTitle = document.getElementById(`editTitle${id}`).value;
   const newIsVisible = document.getElementById(`editIsVisible${id}`).value === 'true';
   const newQuestion = document.getElementById(`editQuestion${id}`).value;
-  const newCriteria = document.getElementById(`editCriteria${id}`).value; // ★修正済み
+  const newCriteria = document.getElementById(`editCriteria${id}`).value;
   const newDeadlineValue = document.getElementById(`editDeadline${id}`).value;
   const fileInput = document.getElementById(`editFileForPrompt${id}`);
   const newFile = fileInput.files[0];
@@ -218,7 +235,7 @@ async function savePrompt(originalPrompt) {
       title: newTitle,
       isVisible: newIsVisible,
       question: newQuestion,
-      criteria: newCriteria, // ★修正済み
+      criteria: newCriteria,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
     
@@ -240,28 +257,22 @@ async function savePrompt(originalPrompt) {
   } catch (error) {
     console.error('保存に失敗しました:', error);
     alert('保存に失敗しました。');
-  } finally {
-    loadPromptTable({ subjectId: currentSubjectId });
   }
 }
 
 // ------------------------------
-// 編集の取り消し
+// 編集の取り消し ★★★ 修正点 ★★★
 // ------------------------------
 function cancelEdit() {
-  loadPromptTable({ subjectId: currentSubjectId });
+  // onSnapshotはUIの変更を元に戻せないため、手動でテーブルを再描画する
+  window.loadPromptTable({ subjectId: currentSubjectId });
 }
 
 // ------------------------------
-// Firestoreからプロンプトを削除
+// Firestoreからプロンプトを削除 (変更なし)
 // ------------------------------
 async function deletePrompt(id) {
   if (!confirm('削除すると元に戻せません。本当に削除しますか？')) return;
-
-  const row = document.getElementById(`promptRow${id}`);
-  const deleteButton = row.querySelector('.delete');
-  deleteButton.disabled = true;
-  deleteButton.innerText = '削除中...';
 
   try {
     const db = firebase.firestore();
@@ -276,14 +287,11 @@ async function deletePrompt(id) {
   } catch (error) {
     console.error('削除に失敗しました:', error);
     alert('削除に失敗しました。');
-  } finally {
-    loadPromptTable({ subjectId: currentSubjectId });
   }
 }
 
-
 // ------------------------------
-// 提出結果を表示
+// 提出結果を表示 (変更なし)
 // ------------------------------
 async function showResults(button, promptId) {
     button.disabled = true;
@@ -303,7 +311,7 @@ async function showResults(button, promptId) {
 }
 
 // ------------------------------
-// 長いテキストを省略表示
+// 長いテキストを省略表示 (変更なし)
 // ------------------------------
 function createTruncatedTextCell(cell, text) {
   const fullText = text || '';
@@ -320,7 +328,6 @@ function createTruncatedTextCell(cell, text) {
   `;
 }
 
-
 function togglePromptText(linkElement) {
   const textDiv = linkElement.previousElementSibling;
   const isNowTruncated = textDiv.classList.toggle('truncated-text');
@@ -328,7 +335,7 @@ function togglePromptText(linkElement) {
 }
 
 // ------------------------------
-// 複製モーダル関連
+// 複製モーダル関連 (変更なし)
 // ------------------------------
 let sourcePromptForDuplication = null;
 
@@ -390,7 +397,7 @@ async function duplicatePrompt() {
     const newPromptData = {
         title: `(コピー) ${sourcePromptForDuplication.title}`,
         question: sourcePromptForDuplication.question,
-        criteria: sourcePromptForDuplication.criteria, // ★修正済み
+        criteria: sourcePromptForDuplication.criteria,
         isVisible: false,
         teacherId: window.currentTeacherId,
         subjectId: destinationSubjectId,
@@ -420,7 +427,6 @@ async function duplicatePrompt() {
     
     alert('課題を複製しました。');
     closeDuplicateModal();
-    loadPromptTable({ subjectId: currentSubjectId });
   } catch (error) {
     console.error('課題の複製に失敗しました:', error);
     alert('複製に失敗しました。');

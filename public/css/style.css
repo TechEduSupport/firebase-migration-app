@@ -1,0 +1,342 @@
+/* public/css/style.css */
+
+/* 採点セクション */
+#rating-section {
+  display: none;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #e6f7ff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+#submit-rating-button {
+  background-color: #4A90E2;
+}
+#submit-rating-button:hover {
+  background-color: #357ABD;
+}
+#submit-rating-button:disabled {
+  background-color: #d3d3d3;
+  cursor: not-allowed;
+}
+
+/* 生徒・先生ページ共通 */
+.student-instructions {
+  color: #666;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.note {
+  color: #555;
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 10px;
+  background-color: #fff;
+}
+
+.announcement-box {
+  background-color: #fff;
+  border-left: 5px solid #4A90E2;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 14px;
+}
+.announcement-box h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #333;
+  border-bottom: 2px solid #4A90E2;
+  padding-bottom: 5px;
+  text-align: left;
+}
+#announcement-text {
+  white-space: pre-wrap;
+  font-size: 14px;
+  color: #333;
+}
+
+.check {
+  background-color: #FF9900;
+  color: #000000;
+  text-shadow: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+.check:hover, .check:focus {
+  opacity: 0.9;
+}
+.excel-export-btn {
+  background: #2b6cb0;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity .3s;
+}
+.excel-export-btn:disabled { opacity: .4; cursor: default; }
+.excel-status {
+  margin-left: 12px;
+  font-size: 13px;
+  color: #555;
+}
+.download-link {
+  color: #4A90E2;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* 解答ソースボタン */
+.src-btn {
+  margin-left: 4px;
+  padding: 4px 10px;
+  border: 1px solid #999;
+  background: #f0f0f0;
+  color: #333;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.src-btn:hover {
+  background: #e0e0e0;
+}
+.src-btn.active {
+  background: #2b6cb0;
+  color: #fff;
+  border-color: #2b6cb0;
+}
+
+/* PDFコンテナ */
+.pdf-container-a4 {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 141.4%;
+  margin-bottom: 10px;
+  display: none;
+}
+.pdf-container-a4 iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* 「もっと見る」機能用のスタイル */
+.toggle-link {
+  color: #4A90E2;
+  cursor: pointer;
+  text-decoration: underline;
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+/* 操作列のボタンを囲むコンテナ */
+.action-cell-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* 横並びボタン用のコンテナ */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 4%;
+}
+.button-group button {
+  width: 48%;
+}
+
+/* 採点基準追加セクション */
+.add-prompt-section {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-top: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease-in-out;
+  overflow: auto;
+}
+.add-prompt-section:focus-within {
+  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.2);
+  border-color: #4A90E2;
+}
+.add-prompt-section h3 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #4A90E2;
+  color: #333;
+  font-size: 1.4em;
+  text-align: left;
+}
+.add-prompt-section label {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #333;
+  margin-top: 20px;
+}
+.add-prompt-section textarea,
+.add-prompt-section select,
+.add-prompt-section input[type="file"] {
+  margin-top: 8px;
+}
+.add-prompt-section .check {
+  margin-top: 10px;
+  width: auto;
+  padding: 10px 20px;
+  float: right;
+}
+#promptCheckResult {
+  clear: both;
+  margin-top: 15px;
+  max-height: 320px;
+  overflow: auto;
+}
+.check-result-banner {
+  position: sticky; top: 80px; z-index: 900;
+  display: none; padding: 10px 14px; border-radius: 6px; border: 1px solid;
+  margin: 14px 0;
+}
+.check-result-banner.success { background:#e6ffed; border-color:#b7e1cd; color:#2b6447; }
+.check-result-banner.warning { background:#fffbe6; border-color:#ffe58f; color:#8a6d3b; }
+.check-result-banner.error   { background:#fff1f0; border-color:#ffccc7; color:#a8071a; }
+#addPromptButton {
+  margin-top: 30px;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+/* ファイルアイコンのスタイル */
+.file-icon {
+  font-size: 24px;
+  text-decoration: none;
+  color: #555;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.file-icon:hover {
+  transform: scale(1.2);
+}
+
+/* 編集モードのファイル入力エリア */
+.edit-file-section {
+  margin-top: 15px;
+  border-top: 1px dashed #ccc;
+  padding-top: 10px;
+}
+.edit-file-section label {
+  font-size: 14px;
+  font-weight: bold;
+  display: block;
+}
+.edit-file-section .current-file {
+  font-size: 12px;
+  color: #333;
+  margin: 5px 0;
+  word-break: break-all;
+}
+.edit-file-section .file-help-text {
+  font-size: 11px;
+  color: #555;
+  margin-top: 5px;
+}
+
+/* テキスト省略 */
+.truncated-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-wrap;
+}
+
+/* 編集フォームのグリッドレイアウト */
+.edit-form-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 10px 15px;
+  align-items: center;
+}
+.edit-form-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  vertical-align: top;
+}
+.edit-form-textarea.question,
+.edit-form-textarea.criteria {
+  min-height: 300px;
+  resize: vertical;
+}
+
+/* 矛盾チェックボタン */
+.textarea-container {
+  position: relative;
+}
+.check-prompt-icon-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: auto;
+  padding: 8px 12px;
+  background-color: #FF9900;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.check-prompt-icon-btn:hover {
+  opacity: 0.9;
+}
+
+/* タブ */
+.tab-navigation {
+  display: flex;
+  border-bottom: 2px solid #ccc;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+.tab-button {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  font-size: 1.1em;
+  color: #555;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  width: auto;
+}
+.tab-button.active {
+  color: #4A90E2;
+  font-weight: bold;
+  border-bottom-color: #4A90E2;
+}
+.tab-button:not(.active):hover {
+  background-color: #f5f5f5;
+}
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+

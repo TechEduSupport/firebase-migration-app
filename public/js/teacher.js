@@ -1,65 +1,83 @@
 // public/js/teacher.js
 
+// グローバルスコープで選択中のIDを管理
+let selectedYear = null;
+let selectedClassId = null;
+let selectedSubjectId = null;
+
 /**
  * ページの読み込みが完了した際の初期化処理
  */
 document.addEventListener('DOMContentLoaded', () => {
   const promptTable = document.getElementById('promptTable');
   if (promptTable) {
-    promptTable.innerHTML = `<tr><td colspan="7" style="text-align: center;">年度・クラス・授業を選択してください。</td></tr>`;
+    promptTable.innerHTML = `<tr><td colspan="7" style="text-align: center;">上のメニューから年度・クラス・授業を選択してください。</td></tr>`;
   }
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       window.currentTeacherId = user.uid;
-      initializeFilterDropdowns();
+      initializeFilterPanes();
     }
   });
 });
 
 /**
- * 絞り込み用ドロップダウンの初期設定を行う
+ * 3ペインUIの初期設定を行う
  */
-async function initializeFilterDropdowns() {
-  const yearSelect = document.getElementById('year-select');
-  if (!yearSelect) return;
-
-  setupYearSelect(yearSelect);
-  await loadClassesForYear(yearSelect.value);
+function initializeFilterPanes() {
+  setupYearPane();
 }
 
 /**
- * 年度選択ドロップダウンに、現在の年度から過去5年分の選択肢を生成する
+ * 年度ペインに、現在の年度から過去5年分の選択肢を生成する
  */
-function setupYearSelect(yearSelect) {
+function setupYearPane() {
+  const yearPane = document.getElementById('year-pane');
+  if (!yearPane) return;
+
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const academicYear = (currentMonth < 4) ? currentYear - 1 : currentYear;
   
-  yearSelect.innerHTML = '';
+  yearPane.innerHTML = '';
   for (let i = 0; i < 5; i++) {
     const year = academicYear - i;
-    const option = document.createElement('option');
-    option.value = year;
-    option.textContent = `${year}年度`;
-    if (year === academicYear) option.selected = true;
-    yearSelect.appendChild(option);
+    const li = document.createElement('li');
+    li.textContent = `${year}年度`;
+    li.dataset.year = year;
+    li.onclick = () => handleYearSelection(year, li);
+    yearPane.appendChild(li);
   }
 }
 
 /**
- * 選択された年度に基づいて、担当クラス一覧を読み込む
+ * 年度選択時の処理
+ */
+function handleYearSelection(year, element) {
+  selectedYear = year;
+  updateActiveState(document.getElementById('year-pane'), element);
+  
+  // 後続の選択をリセット
+  selectedClassId = null;
+  selectedSubjectId = null;
+  document.getElementById('subject-pane').innerHTML = '<li>クラスを選択してください</li>';
+  if (window.loadPromptTable) window.loadPromptTable();
+
+  loadClassesForYear(year);
+}
+
+/**
+ * 選択された年度に基づいて、担当クラス一覧を読み込み、クラスペインに表示する
  */
 async function loadClassesForYear(year) {
-  const classSelect = document.getElementById('class-select');
-  const subjectSelect = document.getElementById('subject-select');
-  
-  classSelect.innerHTML = '<option value="">クラスを選択</option>';
-  subjectSelect.innerHTML = '<option value="">授業を選択</option>';
-  
-  if (window.loadPromptTable) window.loadPromptTable(); 
+  const classPane = document.getElementById('class-pane');
+  classPane.innerHTML = '<li>読み込み中...</li>';
 
-  if (!year || !window.currentTeacherId) return;
+  if (!year || !window.currentTeacherId) {
+    classPane.innerHTML = '<li>年度を選択してください</li>';
+    return;
+  }
 
   const db = firebase.firestore();
   try {
@@ -68,77 +86,122 @@ async function loadClassesForYear(year) {
       .where('teacherIds', 'array-contains', window.currentTeacherId)
       .get();
       
-    if (subjectsQuery.empty) return;
+    if (subjectsQuery.empty) {
+      classPane.innerHTML = '<li>担当クラスがありません</li>';
+      return;
+    }
 
     const classIds = [...new Set(subjectsQuery.docs.map(doc => doc.data().classId))];
     const classPromises = classIds.map(id => db.collection('classes').doc(id).get());
     const classSnapshots = await Promise.all(classPromises);
 
+    classPane.innerHTML = ''; // ペインをクリア
     classSnapshots.forEach(doc => {
       if (doc.exists) {
         const classData = doc.data();
-        const option = document.createElement('option');
-        option.value = doc.id;
-        option.textContent = classData.name;
-        classSelect.appendChild(option);
+        const li = document.createElement('li');
+        li.textContent = classData.name;
+        li.dataset.classId = doc.id;
+        li.onclick = () => handleClassSelection(doc.id, li);
+        classPane.appendChild(li);
       }
     });
   } catch (error) {
     console.error("クラスの読み込みに失敗しました:", error);
+    classPane.innerHTML = '<li>読み込みに失敗しました</li>';
   }
 }
 
 /**
- * 選択されたクラスに基づいて、担当授業一覧を読み込む
+ * クラス選択時の処理
  */
-async function loadSubjectsForClass(classId) {
-  const subjectSelect = document.getElementById('subject-select');
-  subjectSelect.innerHTML = '<option value="">授業を選択</option>';
-  
+function handleClassSelection(classId, element) {
+  selectedClassId = classId;
+  updateActiveState(document.getElementById('class-pane'), element);
+
+  // 後続の選択をリセット
+  selectedSubjectId = null;
   if (window.loadPromptTable) window.loadPromptTable();
 
-  if (!classId || !window.currentTeacherId) return;
+  loadSubjectsForClass(classId);
+}
+
+/**
+ * 選択されたクラスに基づいて、担当授業一覧を読み込み、授業ペインに表示する
+ */
+async function loadSubjectsForClass(classId) {
+  const subjectPane = document.getElementById('subject-pane');
+  subjectPane.innerHTML = '<li>読み込み中...</li>';
+
+  if (!classId || !window.currentTeacherId || !selectedYear) {
+    subjectPane.innerHTML = '<li>クラスを選択してください</li>';
+    return;
+  }
 
   const db = firebase.firestore();
   try {
     const subjectsQuery = await db.collection('subjects')
       .where('classId', '==', classId)
+      .where('year', '==', parseInt(selectedYear)) // 年度も条件に追加
       .where('teacherIds', 'array-contains', window.currentTeacherId)
       .get();
       
+    subjectPane.innerHTML = ''; // ペインをクリア
+    if (subjectsQuery.empty) {
+        subjectPane.innerHTML = '<li>担当授業がありません</li>';
+        return;
+    }
+
     subjectsQuery.forEach(doc => {
       const subjectData = doc.data();
-      const option = document.createElement('option');
-      option.value = doc.id;
-      option.textContent = subjectData.name;
-      subjectSelect.appendChild(option);
+      const li = document.createElement('li');
+      li.textContent = subjectData.name;
+      li.dataset.subjectId = doc.id;
+      li.onclick = () => handleSubjectSelection(doc.id, li);
+      subjectPane.appendChild(li);
     });
   } catch (error) {
     console.error("授業の読み込みに失敗しました:", error);
+    subjectPane.innerHTML = '<li>読み込みに失敗しました</li>';
   }
 }
 
 /**
- * 選択された授業に基づいて、課題一覧を読み込む
+ * 授業選択時の処理
  */
-function loadPromptsForSubject(subjectId) {
+function handleSubjectSelection(subjectId, element) {
+  selectedSubjectId = subjectId;
+  updateActiveState(document.getElementById('subject-pane'), element);
+  
   if (window.loadPromptTable) {
     window.loadPromptTable({ subjectId: subjectId });
   } else {
-    console.error('loadPromptTable関数が見つかりません。prompttable.jsが正しく読み込まれているか確認してください。');
+    console.error('loadPromptTable関数が見つかりません。');
   }
 }
+
+/**
+ * ペイン内のアクティブな項目を更新するヘルパー関数
+ */
+function updateActiveState(pane, activeElement) {
+  // すべてのliから 'active' クラスを削除
+  pane.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+  // クリックされたliに 'active' クラスを追加
+  activeElement.classList.add('active');
+}
+
 
 /**
  * 新しい採点基準をFirestoreに登録する関数
  */
 async function addPrompt() {
-  // ページ上部のフィルターから選択された授業IDを取得
-  const subjectId = document.getElementById('subject-select').value;
-  if (!subjectId) {
+  // ★★★ 変更点: グローバル変数から選択された授業IDを取得 ★★★
+  if (!selectedSubjectId) {
     alert('採点基準を追加する授業を、上の「課題の絞り込み」から選択してください。');
     return;
   }
+  // 選択された授業IDを、以降の処理で使う変数に代入します
+  const subjectId = selectedSubjectId;
 
   // 現在ログインしている先生のIDを取得
   const teacherId = firebase.auth().currentUser.uid;
@@ -149,7 +212,7 @@ async function addPrompt() {
 
   // フォームから各情報を取得
   const promptTitle = document.getElementById('newPromptNote').value;
-  const promptCriteria = document.getElementById('newPromptText').value; // 変数名も分かりやすく変更
+  const promptCriteria = document.getElementById('newPromptText').value;
   const questionText = document.getElementById('newQuestion').value;
   const file = document.getElementById('newFileForPrompt').files[0];
   const deadline = document.getElementById('deadline').value;
@@ -177,13 +240,12 @@ async function addPrompt() {
       imageUrl = await snapshot.ref.getDownloadURL();
       uploadedFileName = file.name;
     }
-
-    // ▼▼▼ フィールド名を 'criteria' に修正した最終版 ▼▼▼
+    
     await newPromptRef.set({
-      subjectId: subjectId,
+      subjectId: subjectId, // ★★★ ここで3ペインで選択した授業IDが使われます ★★★
       teacherId: teacherId,
       title: promptTitle,
-      criteria: promptCriteria,   // ★★★ 'subject' から 'criteria' に変更 ★★★
+      criteria: promptCriteria,
       question: questionText,
       questionImageUrl: imageUrl,
       fileName: uploadedFileName,
@@ -191,7 +253,6 @@ async function addPrompt() {
       deadline: deadline ? new Date(deadline) : null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    // ▲▲▲ フィールド名を 'criteria' に修正した最終版 ▲▲▲
 
     alert('新しい採点基準を追加しました。');
     
@@ -202,11 +263,12 @@ async function addPrompt() {
     document.getElementById('newFileForPrompt').value = '';
     document.getElementById('deadline').value = '';
 
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     // 「課題一覧」タブに切り替えて、最新の一覧を再読み込み
     showTab('tab-list');
-    loadPromptsForSubject(subjectId);
-
-  } catch (error) {
+    
+   } catch (error) {
     console.error("採点基準の追加に失敗しました: ", error);
     alert('エラーが発生しました。採点基準の追加に失敗しました。');
   } finally {
