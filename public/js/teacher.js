@@ -134,10 +134,11 @@ function loadPromptsForSubject(subjectId) {
  */
 async function checkPrompt() {
   const checkButton = document.getElementById('checkPromptButton');
-  const resultBox = document.getElementById('promptCheckResult');
+  const resultBox   = document.getElementById('promptCheckResult');
+  const banner      = document.getElementById('checkResultBanner');
 
-  const promptText = document.getElementById('newPromptText').value;
-  const promptNote = document.getElementById('newPromptNote').value;
+  const promptText       = document.getElementById('newPromptText').value;
+  const promptNote       = document.getElementById('newPromptNote').value;
   const promptVisibility = document.getElementById('newPromptVisibility').value === '表示';
 
   if (!promptText.trim()) {
@@ -145,38 +146,76 @@ async function checkPrompt() {
     return;
   }
 
+  // 初期表示（ローディング）
   checkButton.disabled = true;
   checkButton.innerText = '判定中...';
+  banner.style.display = 'none';
+
   resultBox.style.display = 'block';
   resultBox.className = 'result-box loading';
   resultBox.innerText = 'AIが採点基準をチェックしています...';
 
   try {
-    // ▼▼▼ ここを修正 ▼▼▼
-    // 'asia-northeast1'リージョンを明示的に指定してFunctionsインスタンスを取得
     const functions = firebase.app().functions('asia-northeast1');
-    const checkPromptConsistency = functions.httpsCallable('checkPromptConsistency');
-    // ▲▲▲ 修正ここまで ▲▲▲
-    
-    const response = await checkPromptConsistency({
-      promptText,
-      promptNote,
-      promptVisibility
-    });
+    if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
+      functions.useEmulator('127.0.0.1', 5001);
+    }
+    const checkPromptConsistency =
+      functions.httpsCallable('checkPromptConsistency', { timeout: 300000 });
 
-    const resultText = response.data.result;
-    resultBox.innerText = resultText;
-    
-    if (resultText.includes('問題は見つかりませんでした')) {
-      resultBox.className = 'result-box success';
-    } else {
-      resultBox.className = 'result-box warning';
+    const response = await checkPromptConsistency({ promptText, promptNote, promptVisibility });
+    const resultText = (response && response.data && response.data.result) ? response.data.result : '';
+
+    const ok = resultText.includes('問題は見つかりませんでした');
+
+    // サマリーバナー
+    banner.className = 'check-result-banner ' + (ok ? 'success' : 'warning');
+    banner.innerHTML =
+      (ok ? '✅ 矛盾なし。基準は問題ありません。' : '⚠️ 要修正あり。詳細を確認してください。') +
+      ' <button id="toggleDetailBtn" class="src-btn">詳細を見る</button>';
+    banner.style.display = 'block';
+
+    // 詳細（折りたたみ）
+    resultBox.textContent = resultText;
+    resultBox.className = 'result-box ' + (ok ? 'success' : 'warning');
+    resultBox.style.display = 'none';  // 初期は閉じる
+
+    document.getElementById('toggleDetailBtn').onclick = () => {
+      const show = resultBox.style.display !== 'block';
+      resultBox.style.display = show ? 'block' : 'none';
+      resultBox.classList.toggle('expanded', show);
+      resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    // 修正案の自動反映（あれば）
+    if (!ok) {
+      const applyBtn = document.createElement('button');
+      applyBtn.className = 'edit';
+      applyBtn.style.marginLeft = '10px';
+      applyBtn.textContent = '修正案を反映';
+      applyBtn.onclick = () => {
+        // 「修正案:」以降を抜き出す（簡易）
+        const m = resultText.match(/修正案[\s\S]*?[：:]\s*([\s\S]+)/);
+        const fixed = m ? m[1].trim() : '';
+        if (fixed) {
+          document.getElementById('newPromptText').value = fixed;
+          alert('修正案を採点基準に反映しました。内容を確認して保存してください。');
+        } else {
+          alert('修正案の形式が見つかりませんでした。詳細を確認してください。');
+        }
+      };
+      banner.appendChild(applyBtn);
     }
 
   } catch (error) {
     console.error('採点基準のチェックに失敗しました:', error);
+    banner.className = 'check-result-banner error';
+    banner.textContent = 'エラーが発生しました。もう一度お試しください。';
+    banner.style.display = 'block';
+
     resultBox.className = 'result-box error';
-    resultBox.innerText = 'エラーが発生しました。コンソールログを確認してください。\n' + error.message;
+    resultBox.style.display = 'block';
+    resultBox.innerText = 'エラーが発生しました。\n' + (error && error.message ? error.message : '');
   } finally {
     checkButton.disabled = false;
     checkButton.innerText = '矛盾をチェック';

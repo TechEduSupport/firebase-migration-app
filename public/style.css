@@ -598,11 +598,26 @@ button {
   float: right; /* 右寄せにする */
 }
 
-/* チェック結果表示ボックス */
-#checkResultBox {
-  clear: both; /* floatを解除 */
+/* 採点基準チェック結果のフロート解除と表示調整 */
+#promptCheckResult {
+  clear: both;         /* ← これが肝心 */
   margin-top: 15px;
+  max-height: 320px;   /* 長文対策（任意） */
+  overflow: auto;      /* 長文スクロール（任意） */
 }
+
+.check-result-banner {
+  position: sticky; top: 80px; z-index: 900;
+  display: none; padding: 10px 14px; border-radius: 6px; border: 1px solid;
+  margin: 14px 0;
+}
+.check-result-banner.success { background:#e6ffed; border-color:#b7e1cd; color:#2b6447; }
+.check-result-banner.warning { background:#fffbe6; border-color:#ffe58f; color:#8a6d3b; }
+.check-result-banner.error   { background:#fff1f0; border-color:#ffccc7; color:#a8071a; }
+
+#promptCheckResult { max-height: 320px; overflow: auto; display: none; }
+#promptCheckResult.expanded { max-height: none; }
+
 
 /* 「採点基準を追加」ボタン */
 #addPromptButton {

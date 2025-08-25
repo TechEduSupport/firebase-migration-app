@@ -1,3 +1,5 @@
+require('dotenv').config(); 
+
 // functions/src/promptChecker.js
 
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
@@ -7,17 +9,24 @@ const axios = require("axios");
 /**
  * AIが採点基準の矛盾・曖昧さをチェックする (v2形式)
  */
-exports.checkPromptConsistency = onCall({ region: "asia-northeast1", cors: true }, async (request) => {
+exports.checkPromptConsistency = onCall({
+     region: "asia-northeast1",
+     cors: true,
+     timeoutSeconds: 300
+ }, async (request) => {
   // 認証済みユーザーか確認
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'この機能の利用には認証が必要です。');
   }
 
   const { promptText, promptNote, promptVisibility } = request.data;
-  const apiKey = process.env.OPENAI_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  logger.info("--- デバッグ情報 ---");
+  logger.info("読み込まれたOPENAI_API_KEY:", apiKey); 
 
   if (!apiKey) {
-    logger.error("OPENAI_KEYが設定されていません。");
+    logger.error("OPENAI_API_KEYが設定されていません。");    
     throw new HttpsError('internal', 'サーバー側でAPIキーが設定されていません。');
   }
   
@@ -47,7 +56,7 @@ exports.checkPromptConsistency = onCall({ region: "asia-northeast1", cors: true 
   const requestBody = {
     "model": "gpt-5-2025-08-07",
     "messages": [systemMessage, userMessage],
-    "max_completion_tokens": 1500,
+    "max_completion_tokens": 5000,
     "reasoning_effort": "medium", 
     "verbosity": "medium" 
   };
