@@ -60,6 +60,8 @@ description: (文字列) 授業内容の説明など（任意）
 
 year: (数値) 年度 (例: 2025)
 
+term: (数値) 学期 (例: 1, 2)
+
 isActive: (真偽値) アクティブな授業か (デフォルト: true)
 
 schoolId: (文字列) 所属するschoolsコレクションのドキュメントID

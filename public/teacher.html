@@ -26,80 +26,134 @@
     </div>
     
     <h3 id="teacherName"></h3>
-    <button class="bulk-grading">一括採点モードへ</button>
+    <button class="bulk-grading"><i class="fas fa-rocket"></i> 一括採点モードへ</button>
 
-    <h3>課題の絞り込み</h3> 
-    <div class="filter-panes">
-      <div class="pane">
-        <div class="pane-header">年度</div>
-        <ul id="year-pane" class="pane-list"></ul>
-      </div>
-      <div class="pane">
-        <div class="pane-header">クラス</div>
-        <ul id="class-pane" class="pane-list">
-          <li>年度を選択してください</li>
-        </ul>
-      </div>
-      <div class="pane">
-        <div class="pane-header">授業</div>
-        <ul id="subject-pane" class="pane-list">
-          <li>クラスを選択してください</li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="tab-navigation">
-      <button class="tab-button active" onclick="showTab('tab-list')">課題一覧</button>
-      <button class="tab-button" onclick="showTab('tab-create')">新規作成</button>
-    </div>
-    
-    <div id="tab-list" class="tab-content active">
-      <h3>課題・採点基準の編集</h3>
-      <div class="table-container">
-        <table id="promptTable">
-          </table>
-      </div>
-    </div>
-
-    <div id="tab-create" class="tab-content">
-      <div class="add-prompt-section">
-        <h3>新しい採点基準の作成</h3>
-        <p>※採点基準を追加する授業を、上の絞り込みメニューから選択してください。</p>
-        <label for="newPromptNote">タイトル：</label>
-        <textarea id="newPromptNote" style="height: 100px; width: 100%;"></textarea>
-
-        <label for="newQuestion">問題文：</label>
-        <textarea id="newQuestion" style="height: 200px; width: 100%;"></textarea>
-
-        <label for="newFileForPrompt">問題の画像またはPDFファイル（任意）：</label>
-        <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
-        
-        <label for="newPromptText">採点基準：</label>
-        <div class="textarea-container">
-          <textarea id="newPromptText" rows="10" placeholder="採点基準を入力してください..."></textarea>
-          <button id="checkPromptButton" class="check-prompt-icon-btn" title="矛盾・曖昧さをチェック" onclick="checkPrompt()">
-            <i class="fas fa-search"></i>
-            <span>チェック</span>
-          </button>
+    <section class="card">
+      <h2 class="section-title">
+        <span class="step-number">1</span>
+        <i class="fas fa-chalkboard-teacher section-icon"></i>
+        授業を選択する
+      </h2>
+      <p class="section-description">はじめに、課題を管理したい授業を下のメニューから選択してください。</p>
+      
+      <div class="filter-panes">
+        <div class="pane">
+          <div class="pane-header">年度</div>
+          <ul id="year-pane" class="pane-list"></ul>
         </div>
-        
-        <div id="checkResultBanner" class="check-result-banner"></div>
-        
-        <label for="deadline">締め切り日：</label>
-        <input type="datetime-local" id="deadline">
-        
-        <label for="newPromptVisibility">生徒用ページでの表示：</label>
-        <select id="newPromptVisibility">
-          <option value="表示" selected>表示</option>
-          <option value="非表示">非表示</option>
-        </select>
-        <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
+        <div class="pane">
+          <div class="pane-header">学期</div>
+          <ul id="term-pane" class="pane-list">
+            <li>年度を選択してください</li>
+          </ul>
+        </div>
+        <div class="pane">
+          <div class="pane-header">クラス</div>
+          <ul id="class-pane" class="pane-list">
+            <li>学期を選択してください</li>
+          </ul>
+        </div>
+        <div class="pane">
+          <div class="pane-header">授業</div>
+          <ul id="subject-pane" class="pane-list">
+            <li>クラスを選択してください</li>
+          </ul>
+        </div>
       </div>
-    </div>
-    </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">
+        <span class="step-number">2</span>
+        <i class="fas fa-edit section-icon"></i>
+        課題を管理する
+      </h2>
+      <div class="tab-navigation">
+        <button class="tab-button active" onclick="showTab('tab-list')"><i class="fas fa-list-ul"></i> 課題一覧</button>
+        <button class="tab-button" onclick="showTab('tab-create')"><i class="fas fa-plus"></i> 新規作成</button>
+      </div>
+      
+      <div id="tab-list" class="tab-content active">
+        <!-- ▼▼▼ <table> を <div> に変更 ▼▼▼ -->
+        <div id="prompt-card-list" class="prompt-card-container">
+          <!-- JavaScriptによってカードがここに生成されます -->
+        </div>
+        <!-- ▲▲▲ 変更ここまで ▲▲▲ -->
+      </div>
+
+      <div id="tab-create" class="tab-content">
+        <div class="add-prompt-section">
+          <h3>新しい採点基準の作成</h3>
+          <p class="info-box">
+            <i class="fas fa-info-circle"></i>
+            採点基準を追加する授業を、上の「1. 授業を選択する」メニューから選択してください。
+          </p>
+          <label for="newPromptNote">タイトル：</label>
+          <textarea id="newPromptNote" style="height: 100px; width: 100%;"></textarea>
+
+          <label for="newQuestion">問題文：</label>
+          <textarea id="newQuestion" style="height: 200px; width: 100%;"></textarea>
+
+          <label for="newFileForPrompt">問題の画像またはPDFファイル（任意）：</label>
+          <input type="file" id="newFileForPrompt" accept="image/*,application/pdf">
+          
+          <label for="newPromptText">採点基準：</label>
+          <div class="textarea-container">
+            <textarea id="newPromptText" rows="10" placeholder="採点基準を入力してください..."></textarea>
+            <button id="checkPromptButton" class="check-prompt-icon-btn" title="矛盾・曖昧さをチェック" onclick="checkPrompt()">
+              <i class="fas fa-search"></i>
+              <span>チェック</span>
+            </button>
+          </div>
+          
+          <div id="checkResultBanner" class="check-result-banner"></div>
+          
+          <label for="deadline">締め切り日：</label>
+          <input type="datetime-local" id="deadline">
+          
+          <label for="newPromptVisibility">生徒用ページでの表示：</label>
+          <select id="newPromptVisibility">
+            <option value="表示" selected>表示</option>
+            <option value="非表示">非表示</option>
+          </select>
+          <button id="addPromptButton" onclick="addPrompt()" class="edit">採点基準を追加</button>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <div id="duplicate-modal" class="modal-container" style="display: none;">...</div>
   <div id="contradictionModal" class="modal-container">...</div>
+
+  <div id="results-modal" class="modal-container">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3 id="results-modal-title">提出結果</h3>
+        <span class="modal-close-button" onclick="closeResultsModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="table-container">
+          <table id="resultsTable">
+            <thead>
+              <tr>
+                <th style="width: 5%;">番号</th>
+                <th style="width: 10%;">氏名</th>
+                <th style="width: 10%;">ステータス</th>
+                <th style="width: 8%;">評価点</th>
+                <th style="width: 12%;">提出日時</th>
+                <th style="width: 25%;">生徒の回答</th>
+                <th style="width: 25%;">フィードバック</th>
+                <th style="width: 5%;">提出物</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <footer>
     &copy; 2024 EduSupport. All rights reserved.

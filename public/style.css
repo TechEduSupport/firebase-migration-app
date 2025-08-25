@@ -1258,3 +1258,484 @@ header h1 {
     border-radius: 4px;
     margin-bottom: 15px;
 }
+
+/* =================================== */
+/* UI改善のための追加スタイル            */
+/* =================================== */
+
+/* カード型セクションの基本スタイル */
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+/* セクションタイトルのスタイル */
+.section-title {
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 1.4em;
+  color: #333;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid #4A90E2;
+  padding-bottom: 15px;
+}
+
+/* 手順番号のアイコン */
+.step-number {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  background-color: #4A90E2;
+  color: #fff;
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+/* =================================== */
+/* UI改善のための追加スタイル            */
+/* =================================== */
+
+/* カード型セクションの基本スタイル */
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+/* セクションタイトルのスタイル */
+.section-title {
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 15px; /* 説明文との余白を調整 */
+  font-size: 1.4em;
+  color: #333;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid #4A90E2;
+  padding-bottom: 15px;
+}
+
+/* セクションの説明文 */
+.section-description {
+  color: #666;
+  font-size: 0.95em;
+  margin-top: -10px;
+  margin-bottom: 20px;
+}
+
+
+/* 手順番号のアイコン */
+.step-number {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  background-color: #4A90E2;
+  color: #fff;
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+/* --- ボタンの色の見直し --- */
+
+/* 複製ボタン (オレンジ系) */
+.duplicate-button {
+  background-color: #f0ad4e;
+  color: #fff;
+}
+.duplicate-button:hover {
+  background-color: #ec971f;
+}
+
+/* 結果ボタン (既存の result クラスをそのまま使用) */
+.result {
+  background-color: #5bc0de;
+  color: #fff;
+}
+.result:hover {
+  background-color: #31b0d5;
+}
+
+/* --- 注意書きメッセージのスタイル見直し --- */
+.info-box {
+  background-color: #e7f3fe; /* 水色系の背景 */
+  border: 1px solid #b3d7f3;  /* 少し濃い水色の線 */
+  color: #2c5282;             /* 濃い青系の文字色 */
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.info-box i {
+  margin-right: 10px;
+  font-size: 1.2em;
+}
+
+/* 既存のスタイルを上書き */
+#tab-create .add-prompt-section p {
+    color: inherit; /* 親要素の色を継承 */
+    background-color: inherit;
+    border: inherit;
+}
+
+/* =================================== */
+/* モダンデザインへのアップデート         */
+/* =================================== */
+
+/* 1. 基本フォントをモダンなゴシック体に */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+/* 2. 全ての入力フォーム（テキスト、日付、セレクトボックス）のスタイルを統一 */
+input[type="text"],
+input[type="password"],
+input[type="datetime-local"],
+textarea,
+select {
+  background-color: #fff;
+  border: 1px solid #d1d5db; /* 少し薄いグレーの線 */
+  border-radius: 6px; /* 角を少し丸く */
+  padding: 12px 14px; /* パディングを調整して押しやすく */
+  font-size: 16px; /* 文字サイズを統一 */
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* フォームが選択された（フォーカスした）時のスタイル */
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #4A90E2; /* テーマカラーの青色に */
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25); /* 青色のうすい影 */
+}
+
+/* 3. ボタンに立体感とインタラクションを追加 */
+button.edit,
+button.duplicate-button,
+button.result,
+button.bulk-grading {
+  border: none;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* ボタンにマウスカーソルが乗った時、少しだけ浮き上がるように見せる */
+button.edit:hover,
+button.duplicate-button:hover,
+button.result:hover,
+button.bulk-grading:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 4. タブのデザインをより分かりやすく */
+.tab-navigation {
+    border-bottom: 2px solid #e5e7eb; /* 境界線を少し薄く */
+}
+
+.tab-button {
+    padding: 12px 24px;
+    font-weight: 600; /* 少し太字に */
+    color: #6b7280;   /* 非アクティブなタブの文字色 */
+    transition: color 0.2s;
+}
+
+.tab-button.active {
+    color: #4A90E2; /* アクティブなタブの文字色（テーマカラー） */
+    border-bottom: 2px solid #4A90E2;
+}
+
+.tab-button:not(.active):hover {
+    color: #374151; /* ホバーで少し濃く */
+    background-color: transparent;
+}
+
+/* =================================== */
+/* アイコン追加のためのスタイル          */
+/* =================================== */
+
+/* ボタン内のアイコンとテキストの隙間 */
+button .fas {
+  margin-right: 8px;
+}
+
+/* セクションタイトルのアイコン */
+.section-icon {
+  margin-right: 12px;
+  color: #4A90E2;
+  font-size: 1.2em;
+}
+
+/* タブ内のアイコン */
+.tab-button .fas {
+  margin-right: 6px;
+}
+
+/* テーブル内のアクションボタン（アイコンのみ）のスタイル */
+.action-cell-buttons {
+  display: flex;
+  justify-content: center; /* アイコンを中央揃えに */
+  gap: 8px; /* ボタン間の隙間 */
+  flex-direction: row; /* 横並びに変更 */
+}
+
+.icon-action-button {
+  width: 40px;   /* ボタンの幅を固定 */
+  height: 40px;  /* ボタンの高さを固定 */
+  padding: 0;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; /* 円形にする */
+}
+
+/* アイコンボタン内のアイコンの右余白をリセット */
+.icon-action-button .fas {
+  margin-right: 0;
+}
+
+/* =================================== */
+/* 結果表示モーダルのためのスタイル      */
+/* =================================== */
+
+/* 横幅の広いモーダル用のクラス */
+.modal-content.large {
+  max-width: 90%; /* 画面幅の90%まで広げる */
+  width: 1200px;  /* ただし最大幅は1200px */
+}
+
+/* モーダル内のテーブルコンテナ */
+.modal-body .table-container {
+  max-height: 65vh; /* モーダルの高さの65%を最大高さに */
+  overflow-y: auto; /* 内容が多ければスクロール */
+}
+
+/* 提出ステータス表示用のチップ */
+.status-chip {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  display: inline-block;
+  text-align: center;
+}
+
+.status-chip.submitted {
+  background-color: #28a745; /* 緑色 */
+}
+
+.status-chip.not-submitted {
+  background-color: #6c757d; /* グレー */
+}
+
+/* 提出画像のアイコン */
+#resultsTable .fa-file-image {
+  font-size: 20px;
+  color: #4A90E2;
+  transition: transform 0.2s;
+}
+#resultsTable .fa-file-image:hover {
+  transform: scale(1.2);
+}
+
+/* 「もっと見る」機能のスタイルを再定義 */
+.toggle-link {
+  color: #4A90E2;
+  cursor: pointer;
+  text-decoration: underline;
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.truncated-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-wrap;
+}
+
+/* =================================== */
+/* 課題一覧カードレイアウト用のスタイル   */
+/* =================================== */
+
+.prompt-card-container {
+  display: grid;
+  gap: 20px; /* カード間の余白 */
+}
+
+/* ▼▼▼ 修正点 ▼▼▼ */
+.prompt-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  /* paddingを削除し、子要素で管理 */
+  transition: box-shadow 0.2s ease-in-out;
+  overflow: hidden; /* 角丸を子要素に適用させるため */
+}
+
+.prompt-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.prompt-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: #f9fafb; /* ヘッダーに薄い背景色を追加 */
+  border-bottom: 1px solid #e5e7eb; /* 境界線を明確に */
+  padding: 16px 24px; /* 上下の余白を調整 */
+  /* 以前のpaddingとmarginを削除 */
+}
+/* ▲▲▲ 修正点ここまで ▲▲▲ */
+
+
+.prompt-title {
+  font-size: 1.25em;
+  margin: 0;
+  color: #111827;
+}
+
+.prompt-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ▼▼▼ 修正点 ▼▼▼ */
+.prompt-card-body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 24px;
+  padding: 20px 24px; /* カード本体の余白をこちらに移動 */
+}
+/* ▲▲▲ 修正点ここまで ▲▲▲ */
+
+
+.prompt-card-info {
+  background-color: #f9fafb;
+  padding: 16px;
+  border-radius: 6px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.prompt-card-info .info-item {
+  margin-bottom: 15px;
+}
+
+.prompt-card-info .info-item label {
+  font-size: 0.8em;
+  font-weight: bold;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px 0;
+}
+
+.prompt-card-info .info-item p {
+  margin: 0;
+  font-size: 0.95em;
+  color: #374151;
+}
+
+.prompt-card-details .details-section {
+  background-color: #f9fafb; /* 背景色を追加 */
+  border: 1px solid #f3f4f6;   /* 薄い枠線を追加 */
+  border-radius: 6px;           /* 角を丸くする */
+  padding: 16px;                /* 内側の余白 */
+  margin-bottom: 15px;
+}
+
+.prompt-card-details h5 {
+  font-size: 0.9em;
+  color: #111827;
+  margin: 0 0 8px 0;
+  /* 見出し下の線は不要になったので削除 */
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+
+.content-text {
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* =================================== */
+/* トグルスイッチのスタイル             */
+/* =================================== */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #5cb85c; /* 黄緑色 */
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #5cb85c;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
