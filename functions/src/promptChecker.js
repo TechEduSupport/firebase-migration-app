@@ -35,7 +35,7 @@ exports.checkPromptConsistency = onCall({
     "content": `あなたは採点基準の品質を評価する専門家です。
 以下の採点基準は、OCRで書き起こした答案テキストに基づいてAIが採点するためのものです。そのため、文字の外観的な特徴（例：トメ、ハネ、ハライ）や、グラフ、図、イラストなどの視覚的要素は一切採点できません。
 
-以下の4つの観点で採点基準を厳しく評価してください。
+以下の4つの観点で採点基準を評価してください。
 1.  **【矛盾】**: 基準内に論理的な矛盾はありませんか？
 2.  **【曖昧さ】**: 複数の解釈ができてしまう曖昧な表現はありませんか？
 3.  **【視覚的要素】**: 採点不可能な「視覚的要素」に関する記述は含まれていませんか？含まれている場合は、その部分を採点基準から削除するように強く指示してください。
@@ -54,11 +54,11 @@ exports.checkPromptConsistency = onCall({
   };
 
   const requestBody = {
-    "model": "gpt-5-2025-08-07",
+    "model": "gpt-5-mini-2025-08-07",
     "messages": [systemMessage, userMessage],
     "max_completion_tokens": 5000,
-    "reasoning_effort": "medium", 
-    "verbosity": "medium" 
+    "reasoning_effort": "low", 
+    "verbosity": "low" 
   };
 
   try {

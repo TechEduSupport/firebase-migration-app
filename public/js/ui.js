@@ -31,3 +31,50 @@ function showMessage(message) {
     document.body.removeChild(messageElement);
   }, 3000);
 }
+
+// public/js/ui.js (新規作成)
+
+document.addEventListener('DOMContentLoaded', () => {
+  // ユーザーメニューの開閉ロジック
+  const userMenuButton = document.getElementById('userMenuButton');
+  const userMenuDropdown = document.getElementById('userMenuDropdown');
+  if (userMenuButton) {
+    userMenuButton.addEventListener('click', () => {
+      userMenuDropdown.classList.toggle('show');
+    });
+  }
+
+  // メニュー外をクリックしたら閉じる
+  window.addEventListener('click', (event) => {
+    if (userMenuButton && !userMenuButton.contains(event.target)) {
+      userMenuDropdown.classList.remove('show');
+    }
+  });
+});
+
+/**
+ * メインコンテンツの表示を切り替える関数
+ * @param {string} viewId 表示するビューのID ('view-list' or 'view-create')
+ */
+function showView(viewId) {
+  // すべてのビューを非表示に
+  document.querySelectorAll('.main-view').forEach(view => {
+    view.classList.remove('active-view');
+  });
+  // 対象のビューのみ表示
+  document.getElementById(viewId).classList.add('active-view');
+}
+
+/**
+ * 授業選択モーダルを開く
+ */
+function openSubjectSelectModal() {
+  document.getElementById('subject-select-modal').classList.add('is-open');
+}
+
+/**
+ * 授業選択モーダルを閉じる
+ */
+function closeSubjectSelectModal() {
+  document.getElementById('subject-select-modal').classList.remove('is-open');
+}

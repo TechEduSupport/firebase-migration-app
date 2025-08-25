@@ -85,7 +85,7 @@ question: (文字列) 問題文
 
 questionImageUrl: (文字列) 問題のファイルURL（任意）
 
-subject: (文字列) 採点基準
+criteria: (文字列) 採点基準
 
 isVisible: (真偽値) 生徒に表示するか
 

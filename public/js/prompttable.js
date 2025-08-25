@@ -19,7 +19,7 @@ function escapeHtml(str) {
 
 
 // ------------------------------
-// Firestoreから課題を読み込み、テーブルを描画する (絞り込み機能付き)
+// Firestoreから課題を読み込み、テーブルを描画する
 // ------------------------------
 async function loadPromptTable(filters = {}) {
   const table = document.getElementById('promptTable');
@@ -79,7 +79,6 @@ function populatePromptTable(prompts) {
     const row = table.insertRow();
     row.id = 'promptRow' + prompt.id;
 
-    // 列の生成
     const fileCell = row.insertCell(0);
     const titleCell = row.insertCell(1);
     const visibilityCell = row.insertCell(2);
@@ -88,7 +87,6 @@ function populatePromptTable(prompts) {
     const criteriaCell = row.insertCell(5);
     const actionCell = row.insertCell(6);
     
-    // 1. 画像/PDF
     if (prompt.questionImageUrl && typeof prompt.questionImageUrl === 'string') {
         const isPdf = prompt.questionImageUrl.toLowerCase().includes('.pdf');
         const icon = isPdf ? '📄' : '🖼️';
@@ -98,24 +96,18 @@ function populatePromptTable(prompts) {
     }
     fileCell.style.textAlign = 'center';
     
-    // 2. タイトル
     titleCell.innerText = prompt.title || '(タイトルなし)';
-    
-    // 3. 表示状態
     visibilityCell.innerText = prompt.isVisible ? '表示' : '非表示';
     
-    // 4. 締め切り
     if (prompt.deadline && prompt.deadline.toDate) {
       deadlineCell.innerText = prompt.deadline.toDate().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
     } else {
       deadlineCell.innerText = '未設定';
     }
 
-    // 5. 問題文 & 6. 採点基準
     createTruncatedTextCell(questionCell, prompt.question);
-    createTruncatedTextCell(criteriaCell, prompt.subject);
+    createTruncatedTextCell(criteriaCell, prompt.criteria); // ★修正済み
 
-    // 7. 操作ボタン
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'action-cell-buttons';
 
@@ -148,7 +140,7 @@ function populatePromptTable(prompts) {
 // 編集モードへの切り替え
 // ------------------------------
 function editPrompt(prompt, row) {
-  const { id, subject, title, isVisible, question, questionImageUrl, deadline } = prompt;
+  const { id, criteria, title, isVisible, question, questionImageUrl, deadline } = prompt; // ★修正済み
   
   const deadlineValue = deadline && deadline.toDate ? new Date(deadline.toDate().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : '';
 
@@ -175,9 +167,7 @@ function editPrompt(prompt, row) {
         <textarea id="editQuestion${id}" class="edit-form-textarea question">${escapeHtml(question || '')}</textarea>
 
         <label>採点基準:</label>
-        <textarea id="editSubject${id}" class="edit-form-textarea criteria">${escapeHtml(subject || '')}</textarea>
-
-        <label>画像/PDF:</label>
+        <textarea id="editCriteria${id}" class="edit-form-textarea criteria">${escapeHtml(criteria || '')}</textarea> <label>画像/PDF:</label>
         <div>
            <div class="current-file">現在のファイル: ${questionImageUrl ? `<a href="${questionImageUrl}" target="_blank">表示</a>` : 'なし'}</div>
            <input type="file" id="editFileForPrompt${id}" accept="image/*,application/pdf" style="margin-top: 5px; width: 100%;">
@@ -217,7 +207,7 @@ async function savePrompt(originalPrompt) {
   const newTitle = document.getElementById(`editTitle${id}`).value;
   const newIsVisible = document.getElementById(`editIsVisible${id}`).value === 'true';
   const newQuestion = document.getElementById(`editQuestion${id}`).value;
-  const newSubject = document.getElementById(`editSubject${id}`).value;
+  const newCriteria = document.getElementById(`editCriteria${id}`).value; // ★修正済み
   const newDeadlineValue = document.getElementById(`editDeadline${id}`).value;
   const fileInput = document.getElementById(`editFileForPrompt${id}`);
   const newFile = fileInput.files[0];
@@ -228,7 +218,7 @@ async function savePrompt(originalPrompt) {
       title: newTitle,
       isVisible: newIsVisible,
       question: newQuestion,
-      subject: newSubject,
+      criteria: newCriteria, // ★修正済み
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
     
@@ -246,10 +236,10 @@ async function savePrompt(originalPrompt) {
     }
 
     await db.collection('prompts').doc(id).update(updateData);
-    showMessage('保存しました。');
+    alert('保存しました。');
   } catch (error) {
     console.error('保存に失敗しました:', error);
-    showMessage('保存に失敗しました。');
+    alert('保存に失敗しました。');
   } finally {
     loadPromptTable({ subjectId: currentSubjectId });
   }
@@ -282,70 +272,11 @@ async function deletePrompt(id) {
     const fileList = await folderRef.listAll();
     await Promise.all(fileList.items.map(fileRef => fileRef.delete()));
     
-    showMessage('削除しました。');
+    alert('削除しました。');
   } catch (error) {
     console.error('削除に失敗しました:', error);
-    showMessage('削除に失敗しました。');
+    alert('削除に失敗しました。');
   } finally {
-    loadPromptTable({ subjectId: currentSubjectId });
-  }
-}
-
-// ------------------------------
-// 新しいプロンプトを追加
-// ------------------------------
-async function addPrompt() {
-  const selectedSubjectId = document.getElementById('subject-select').value;
-  if (!selectedSubjectId) {
-    alert('課題を追加する授業を選択してください。');
-    return;
-  }
-
-  const addButton = document.getElementById('addPromptButton');
-  addButton.disabled = true;
-  addButton.innerText = '追加中...';
-
-  const title = document.getElementById('newPromptNote').value;
-  const question = document.getElementById('newQuestion').value;
-  const subject = document.getElementById('newPromptText').value;
-  const isVisible = document.getElementById('newPromptVisibility').value === '表示';
-  const deadlineValue = document.getElementById('deadline').value;
-  const file = document.getElementById('newFileForPrompt').files[0];
-
-  try {
-    const db = firebase.firestore();
-    const newPromptData = {
-      title, question, subject, isVisible,
-      teacherId: window.currentTeacherId,
-      subjectId: selectedSubjectId,
-      questionImageUrl: '',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      deadline: deadlineValue ? firebase.firestore.Timestamp.fromDate(new Date(deadlineValue)) : null,
-    };
-
-    const docRef = await db.collection('prompts').add(newPromptData);
-
-    if (file) {
-      const storage = firebase.storage();
-      const storageRef = storage.ref(`prompts/${window.currentTeacherId}/${docRef.id}/${file.name}`);
-      const uploadTask = await storageRef.put(file);
-      const downloadURL = await uploadTask.ref.getDownloadURL();
-      await db.collection('prompts').doc(docRef.id).update({ questionImageUrl: downloadURL });
-    }
-    
-    document.getElementById('newPromptNote').value = '';
-    document.getElementById('newQuestion').value = '';
-    document.getElementById('newPromptText').value = '';
-    document.getElementById('deadline').value = '';
-    document.getElementById('newFileForPrompt').value = '';
-    
-    showMessage('追加しました。');
-  } catch (error) {
-    console.error('追加に失敗しました:', error);
-    showMessage('追加に失敗しました。');
-  } finally {
-    addButton.disabled = false;
-    addButton.innerText = '採点基準を追加';
     loadPromptTable({ subjectId: currentSubjectId });
   }
 }
@@ -372,17 +303,15 @@ async function showResults(button, promptId) {
 }
 
 // ------------------------------
-// 長いテキストを省略表示 ★★★ここを修正★★★
+// 長いテキストを省略表示
 // ------------------------------
 function createTruncatedTextCell(cell, text) {
-  // textがnullやundefinedの場合、空文字列として扱う
   const fullText = text || '';
   const fullTextHtml = escapeHtml(fullText).replace(/\n/g, '<br>');
-  const lineCount = (fullText.match(/\n/g) || []).length + 1;
 
-  if (lineCount <= 5) {
-    cell.innerHTML = fullTextHtml;
-    return;
+  if (fullText.length < 150 && (fullText.match(/\n/g) || []).length < 5) {
+      cell.innerHTML = fullTextHtml;
+      return;
   }
 
   cell.innerHTML = `
@@ -390,6 +319,7 @@ function createTruncatedTextCell(cell, text) {
     <a href="#" class="toggle-link" onclick="togglePromptText(this); return false;">もっと見る</a>
   `;
 }
+
 
 function togglePromptText(linkElement) {
   const textDiv = linkElement.previousElementSibling;
@@ -432,7 +362,7 @@ async function setupDuplicateFilters() {
         const classIds = [...new Set(subjects.filter(s => s.year === selectedYear).map(s => s.classId))];
         const classDocs = await Promise.all(classIds.map(id => db.collection('classes').doc(id).get()));
         classSelect.innerHTML = '<option value="">クラスを選択</option>' + classDocs.map(d => `<option value="${d.id}">${d.data().name}</option>`).join('');
-        classSelect.onchange(); // 授業のリストを更新
+        classSelect.onchange();
     };
 
     classSelect.onchange = () => {
@@ -442,7 +372,7 @@ async function setupDuplicateFilters() {
     };
 
     if (years.length > 0) {
-      yearSelect.onchange(); // 初期読み込み
+      yearSelect.onchange();
     }
 }
 
@@ -460,7 +390,7 @@ async function duplicatePrompt() {
     const newPromptData = {
         title: `(コピー) ${sourcePromptForDuplication.title}`,
         question: sourcePromptForDuplication.question,
-        subject: sourcePromptForDuplication.subject,
+        criteria: sourcePromptForDuplication.criteria, // ★修正済み
         isVisible: false,
         teacherId: window.currentTeacherId,
         subjectId: destinationSubjectId,
@@ -475,7 +405,6 @@ async function duplicatePrompt() {
       const storage = firebase.storage();
       const originalUrl = sourcePromptForDuplication.questionImageUrl;
       
-      // CORSの問題を回避するためにfetchを使用
       const response = await fetch(originalUrl);
       const fileBlob = await response.blob();
       
@@ -489,12 +418,12 @@ async function duplicatePrompt() {
       await db.collection('prompts').doc(docRef.id).update({ questionImageUrl: downloadURL });
     }
     
-    showMessage('課題を複製しました。');
+    alert('課題を複製しました。');
     closeDuplicateModal();
     loadPromptTable({ subjectId: currentSubjectId });
   } catch (error) {
     console.error('課題の複製に失敗しました:', error);
-    showMessage('複製に失敗しました。');
+    alert('複製に失敗しました。');
   } finally {
     button.disabled = false;
     button.innerText = 'この授業に複製する';
